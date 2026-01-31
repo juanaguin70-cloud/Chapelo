@@ -1,1492 +1,1455 @@
 <!DOCTYPE html>
 <html lang="gl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Xestor Amegrove 2026 - Reparto e Ganancias Diarias</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Xestor Amegrove 2026 - Reparto e Ganancias Diarias</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --pad: 20px; }
 
-        :root { --pad: 20px; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: var(--pad);
+      -webkit-text-size-adjust: 100%;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            min-height: 100dvh;
-            padding: var(--pad);
-            -webkit-text-size-adjust: 100%;
-        }
+    @supports (padding: max(0px)) {
+      body {
+        padding-top: max(var(--pad), env(safe-area-inset-top));
+        padding-right: max(var(--pad), env(safe-area-inset-right));
+        padding-bottom: max(var(--pad), env(safe-area-inset-bottom));
+        padding-left: max(var(--pad), env(safe-area-inset-left));
+      }
+    }
 
-        @supports (padding: max(0px)) {
-            body {
-                padding-top: max(var(--pad), env(safe-area-inset-top));
-                padding-right: max(var(--pad), env(safe-area-inset-right));
-                padding-bottom: max(var(--pad), env(safe-area-inset-bottom));
-                padding-left: max(var(--pad), env(safe-area-inset-left));
-            }
-        }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
+    header {
+      background: linear-gradient(135deg, #1a3d5c 0%, #2c5aa0 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
 
-        header {
-            background: linear-gradient(135deg, #1a3d5c 0%, #2c5aa0 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
+    header h1 { font-size: 2.5em; margin-bottom: 10px; }
+    header p { font-size: 1.1em; opacity: 0.9; }
 
-        header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        header p { font-size: 1.1em; opacity: 0.9; }
+    .content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+      padding: 30px;
+    }
 
-        .content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            padding: 30px;
-        }
+    @media (max-width: 1200px) {
+      .content { grid-template-columns: minmax(0, 1fr); }
+    }
 
-        @media (max-width: 1200px) { .content { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) {
+      :root { --pad: 10px; }
+      header { padding: 18px; }
+      header h1 { font-size: 1.8em; }
+      header p { font-size: 1em; }
+      .content { padding: 15px; gap: 12px; }
+      .panel { padding: 14px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .tabs { flex-wrap: wrap; }
+      .tab-btn { padding: 10px 12px; flex: 1 1 auto; }
+      table { font-size: 0.8em; }
+      th, td { padding: 8px; }
+    }
 
-        @media (max-width: 600px) {
-            :root { --pad: 10px; }
-            header { padding: 18px; }
-            header h1 { font-size: 1.8em; }
-            header p { font-size: 1em; }
-            .content { padding: 15px; gap: 12px; }
-            .panel { padding: 14px; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .tabs { flex-wrap: wrap; }
-            .tab-btn { padding: 10px 12px; flex: 1 1 auto; }
-            table { font-size: 0.8em; }
-            th, td { padding: 8px; }
-        }
+    .panel {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      border-left: 5px solid #667eea;
+      min-width: 0;
+    }
 
-        .panel {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 20px;
-            border-left: 5px solid #667eea;
-        }
+    .panel h2 { color: #2c5aa0; margin-bottom: 15px; font-size: 1.4em; }
 
-        .panel h2 { color: #2c5aa0; margin-bottom: 15px; font-size: 1.4em; }
+    .form-group { margin-bottom: 15px; }
 
-        .form-group { margin-bottom: 15px; }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+      font-weight: 500;
+      font-size: 0.95em;
+    }
 
-        label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.95em; }
+    /* iOS: 16px para evitar auto-zoom */
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
 
-        /* iOS: 16px para evitar auto-zoom en inputs */
-        input, select, textarea {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
 
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+      width: 100%;
+      margin-top: 10px;
+    }
 
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-            width: 100%;
-            margin-top: 10px;
-        }
+    button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+    button:active { transform: translateY(0); }
 
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
-        button:active { transform: translateY(0); }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      text-align: center;
+      min-width: 0;
+    }
 
-        .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
-            text-align: center;
-        }
+    .stat-card h3 { color: #666; font-size: 0.85em; margin-bottom: 8px; text-transform: uppercase; }
+    .stat-card .value { font-size: 1.8em; font-weight: bold; color: #2c5aa0; }
 
-        .stat-card h3 { color: #666; font-size: 0.85em; margin-bottom: 8px; text-transform: uppercase; }
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 15px;
+      -webkit-overflow-scrolling: touch;
+      max-width: 100%;
+      min-width: 0;
+    }
 
-        .stat-card .value { font-size: 1.8em; font-weight: bold; color: #2c5aa0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+    thead { background: #2c5aa0; color: white; }
+    th { padding: 12px; text-align: left; font-weight: 600; }
+    td { padding: 10px; border-bottom: 1px solid #eee; }
+    tbody tr:hover { background: #f5f5f5; }
 
-        .table-responsive { overflow-x: auto; margin-top: 15px; -webkit-overflow-scrolling: touch; }
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.85em;
+      width: auto;
+      margin-top: 0;
+    }
+    .delete-btn:hover { background: #c82333; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+    .full-width { grid-column: 1 / -1; }
 
-        thead { background: #2c5aa0; color: white; }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+    }
 
-        th { padding: 12px; text-align: left; font-weight: 600; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
-        tbody tr:hover { background: #f5f5f5; }
+    .tab-btn {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.3s;
+      width: auto;
+      margin-top: 0;
+    }
+    .tab-btn.active { color: #667eea; border-bottom-color: #667eea; }
 
-        .delete-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 0.85em;
-            width: auto;
-            margin-top: 0;
-        }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
-        .delete-btn:hover { background: #c82333; }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95em;
+    }
+    .summary-row strong { color: #2c5aa0; }
 
-        .full-width { grid-column: 1 / -1; }
+    .export-btn { background: #28a745; }
+    .export-btn:hover { background: #218838; }
 
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #ddd;
-        }
+    .alert {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    .alert.error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
 
-        .tab-btn {
-            padding: 10px 20px;
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            transition: all 0.3s;
-            width: auto;
-            margin-top: 0;
-        }
+    .month-summary {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 15px;
+    }
+    .month-summary h3 { color: #2c5aa0; margin-bottom: 10px; }
 
-        .tab-btn.active { color: #667eea; border-bottom-color: #667eea; }
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 9999;
+    }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-            font-size: 0.95em;
-        }
-
-        .summary-row strong { color: #2c5aa0; }
-
-        .export-btn { background: #28a745; }
-        .export-btn:hover { background: #218838; }
-
-        .alert {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-
-        .alert.error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
-
-        .month-summary {
-            background: white;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
-            margin-bottom: 15px;
-        }
-
-        .month-summary h3 { color: #2c5aa0; margin-bottom: 10px; }
-
-        .modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.55);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 9999;
-        }
-
-        .modal-content {
-            background: white;
-            width: 100%;
-            max-width: 560px;
-            border-radius: 10px;
-            padding: 18px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.35);
-        }
-    </style>
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 560px;
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    }
+  </style>
 </head>
+
 <body>
 <div class="container">
-    <header>
-        <h1>🐚 Xestor Amegrove 2026</h1>
-        <p>Sistema de Reparto e Ganancias Diarias - Cooperativa de Mexillón</p>
-    </header>
+  <header>
+    <h1>🐚 Xestor Amegrove 2026</h1>
+    <p>Sistema de Reparto e Ganancias Diarias - Cooperativa de Mexillón</p>
+  </header>
 
-    <div class="content">
-        <!-- Panel entrada -->
-        <div class="panel">
-            <h2>📊 Entrada de Datos Diarios</h2>
-            <div id="alert" class="alert" style="display: none;"></div>
+  <div class="content">
+    <!-- Panel entrada -->
+    <div class="panel">
+      <h2>📊 Entrada de Datos Diarios</h2>
+      <div id="alert" class="alert" style="display:none;"></div>
 
-            <form id="entradaForm">
-                <div class="form-group">
-                    <label for="data">Data da Venda</label>
-                    <input type="date" id="data" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="batea">Batea</label>
-                    <select id="batea" required>
-                        <option value="">Selecciona batea</option>
-                        <option value="GONDAR">GONDAR</option>
-                        <option value="CH3">CH 3</option>
-                        <option value="VILLALONGA">VILLALONGA</option>
-                        <option value="ROSI">ROSI</option>
-                        <option value="NOLI">NOLI</option>
-                        <option value="CH4">CH 4</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="tipo">Tipo de Mexillón</label>
-                    <select id="tipo" required onchange="actualizarEtiquetaCantidade()">
-                        <option value="">Selecciona tipo</option>
-                        <option value="EXTRA_F">EXTRA F</option>
-                        <option value="EXTRA_R">EXTRA R</option>
-                        <option value="GRANDE1_F">GRANDE 1 F</option>
-                        <option value="GRANDE1_R">GRANDE 1 R</option>
-                        <option value="GRANDE2_F">GRANDE 2 F</option>
-                        <option value="GRANDE2_R">GRANDE 2 R</option>
-                        <option value="NORMAL_F">NORMAL F</option>
-                        <option value="NORMAL_R">NORMAL R</option>
-                        <option value="EUROPEO_F">EUROPEO F</option>
-                        <option value="EUROPEO_R">EUROPEO R</option>
-                        <option value="LACAS_F">LACAS F</option>
-                        <option value="LACAS_R">LACAS R</option>
-                        <option value="BARCADA">BARCADA</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="cantidade"><span id="etiquetaCantidade">Cantidade (sacos de 10kg)</span></label>
-                    <input type="number" id="cantidade" min="0" step="1" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="prezo" id="etiquetaPrezo">Prezo €/kg</label>
-                    <input type="number" id="prezo" min="0" step="0.01" required>
-                </div>
-
-                <div id="avisoPorcentaxe" style="background: #fff3cd; border: 1px solid #ffc107; color: #856404; padding: 10px; border-radius: 4px; margin-bottom: 10px; display: none; font-size: 0.9em;">
-                    ⚠️ Os porcentaxes deben sumar exactamente 100%
-                </div>
-
-                <div class="form-group">
-                    <label for="volta">Volta</label>
-                    <input type="text" id="volta" placeholder="ex: 1, 2, 3...">
-                </div>
-
-                <div class="form-group" style="border: 2px solid #667eea; padding: 12px; border-radius: 6px; background: #f0f4ff;">
-                    <label style="font-weight: 600; margin-bottom: 12px;">Repartición entre Hermanos (%)</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                        <div>
-                            <label style="font-size: 0.9em;">Juan Antonio</label>
-                            <input type="number" id="porcentaxeJA" min="0" max="100" step="0.1" value="0" required>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.9em;">Jandro</label>
-                            <input type="number" id="porcentaxeJandro" min="0" max="100" step="0.1" value="0" required>
-                        </div>
-                        <div>
-                            <label style="font-size: 0.9em;">Jorge</label>
-                            <input type="number" id="porcentaxeJorge" min="0" max="100" step="0.1" value="0" required>
-                        </div>
-                    </div>
-                    <div style="font-size: 0.85em; color: #666; margin-top: 8px; text-align: center;">
-                        Total: <strong id="totalPorcentaxe">0</strong>% (debe ser 100%)
-                    </div>
-                </div>
-
-                <button type="submit">➕ Engadir Venda</button>
-                <button type="reset" style="background: #6c757d;">🔄 Limpar</button>
-            </form>
+      <form id="entradaForm">
+        <div class="form-group">
+          <label for="data">Data da Venda</label>
+          <input type="date" id="data" required>
         </div>
 
-        <!-- Panel stats -->
-        <div class="panel">
-            <h2>📈 Resultados (Ganancias − Gastos) desde 1 Xaneiro 2026</h2>
-
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h3>Juan Antonio</h3>
-                    <div class="value" id="netoJA">0€</div>
-                    <div style="font-size: 0.8em; color: #666; margin-top: 6px;">
-                        Gan.: <span id="gananciasJA">0€</span> | Gastos: <span id="gastosJA">0€</span>
-                    </div>
-                    <div style="font-size: 0.75em; color: #666; margin-top: 5px;">
-                        (<span id="porcentaxeNetoJA">0</span>% do neto)
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <h3>Jandro</h3>
-                    <div class="value" id="netoJandro">0€</div>
-                    <div style="font-size: 0.8em; color: #666; margin-top: 6px;">
-                        Gan.: <span id="gananciasJandro">0€</span> | Gastos: <span id="gastosJandro">0€</span>
-                    </div>
-                    <div style="font-size: 0.75em; color: #666; margin-top: 5px;">
-                        (<span id="porcentaxeNetoJandro">0</span>% do neto)
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <h3>Jorge</h3>
-                    <div class="value" id="netoJorge">0€</div>
-                    <div style="font-size: 0.8em; color: #666; margin-top: 6px;">
-                        Gan.: <span id="gananciasJorge">0€</span> | Gastos: <span id="gastosJorge">0€</span>
-                    </div>
-                    <div style="font-size: 0.75em; color: #666; margin-top: 5px;">
-                        (<span id="porcentaxeNetoJorge">0</span>% do neto)
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <h3>Total Neto</h3>
-                    <div class="value" id="totalNeto">0€</div>
-                    <div style="font-size: 0.8em; color: #666; margin-top: 6px;">
-                        Gan. total: <span id="totalGanancias">0€</span> | Gastos total: <span id="totalGastos">0€</span>
-                    </div>
-                </div>
-            </div>
-
-            <h3 style="color: #2c5aa0; margin: 20px 0 10px 0;">Repartición por Batea (según filtro de Diario)</h3>
-            <div id="reparticionBatea"></div>
+        <div class="form-group">
+          <label for="batea">Batea</label>
+          <select id="batea" required>
+            <option value="">Selecciona batea</option>
+            <option value="GONDAR">GONDAR</option>
+            <option value="CH3">CH 3</option>
+            <option value="VILLALONGA">VILLALONGA</option>
+            <option value="ROSI">ROSI</option>
+            <option value="NOLI">NOLI</option>
+            <option value="CH4">CH 4</option>
+          </select>
         </div>
 
-        <!-- Panel tabs -->
-        <div class="panel full-width">
-            <div class="tabs">
-                <button class="tab-btn active" onclick="mostrarTab('diario', event)">📅 Diario</button>
-                <button class="tab-btn" onclick="mostrarTab('gastos', event)">💸 Gastos</button>
-                <button class="tab-btn" onclick="mostrarTab('resumo', event)">📋 Resumo Mensual</button>
-                <button class="tab-btn" onclick="mostrarTab('config', event)">⚙️ Configuración</button>
-            </div>
-
-            <!-- Diario -->
-            <div id="diario" class="tab-content active">
-                <h2>📝 Vendas rexistradas</h2>
-
-                <div class="form-group" style="margin-top: 10px;">
-                    <label for="filtroData">Ver vendas do día</label>
-                    <input type="date" id="filtroData">
-                    <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
-                        <button type="button" style="width:auto; background:#6c757d; padding:10px 14px;" onclick="verHoxe()">Hoxe</button>
-                        <button type="button" style="width:auto; background:#0d6efd; padding:10px 14px;" onclick="verTodas()">Todas</button>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Batea</th>
-                            <th>Tipo</th>
-                            <th>Sacos</th>
-                            <th>Quilos</th>
-                            <th>Prezo €/kg</th>
-                            <th>Ganancia €</th>
-                            <th>J. Antonio %</th>
-                            <th>Jandro %</th>
-                            <th>Jorge %</th>
-                            <th>Volta</th>
-                            <th>Acción</th>
-                        </tr>
-                        </thead>
-                        <tbody id="listadoVendas">
-                        <tr><td colspan="12" style="text-align:center; color:#999;">Sen datos</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Gastos -->
-            <div id="gastos" class="tab-content">
-                <h2>💸 Gastos por hermano</h2>
-
-                <div id="alertGastos" class="alert" style="display:none;"></div>
-
-                <form id="gastoForm" style="margin-top: 10px;">
-                    <div class="form-group">
-                        <label for="gastoData">Data do gasto</label>
-                        <input type="date" id="gastoData" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="gastoHermano">Hermano</label>
-                        <select id="gastoHermano" required>
-                            <option value="JA">Juan Antonio</option>
-                            <option value="Jandro">Jandro</option>
-                            <option value="Jorge">Jorge</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="gastoImporte">Importe (€)</label>
-                        <input type="number" id="gastoImporte" min="0" step="0.01" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="gastoConcepto">Concepto (opcional)</label>
-                        <input type="text" id="gastoConcepto" placeholder="Gasolina, reparación, peaxes...">
-                    </div>
-
-                    <button type="submit" style="background:#fd7e14;">➕ Engadir gasto</button>
-                </form>
-
-                <div class="form-group" style="margin-top: 18px;">
-                    <label for="filtroDataGastos">Ver gastos do día</label>
-                    <input type="date" id="filtroDataGastos">
-                    <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
-                        <button type="button" style="width:auto; background:#6c757d; padding:10px 14px;" onclick="verGastosHoxe()">Hoxe</button>
-                        <button type="button" style="width:auto; background:#0d6efd; padding:10px 14px;" onclick="verGastosTodos()">Todas</button>
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Hermano</th>
-                            <th>Importe</th>
-                            <th>Concepto</th>
-                            <th>Acción</th>
-                        </tr>
-                        </thead>
-                        <tbody id="listadoGastos">
-                        <tr><td colspan="5" style="text-align:center; color:#999;">Sen datos</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Resumo -->
-            <div id="resumo" class="tab-content">
-                <h2>📊 Resumo de Vendas por Mes</h2>
-                <div id="resumoMensual"></div>
-            </div>
-
-            <!-- Config -->
-            <div id="config" class="tab-content">
-                <h2>⚙️ Configuración de Precos Estándar (2026)</h2>
-                <div class="form-group" style="margin-top: 20px;">
-                    <label>Precos de Referencia por Tipo</label>
-                    <div style="background: white; padding: 15px; border-radius: 6px; margin-top: 10px;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div>
-                                <label>EXTRA F €/kg</label>
-                                <input type="number" id="precioEXTRA_F" step="0.01" value="1.90">
-                            </div>
-                            <div>
-                                <label>EXTRA R €/kg</label>
-                                <input type="number" id="precioEXTRA_R" step="0.01" value="1.90">
-                            </div>
-                            <div>
-                                <label>GRANDE 1 F €/kg</label>
-                                <input type="number" id="precioGRANDE1_F" step="0.01" value="1.40">
-                            </div>
-                            <div>
-                                <label>GRANDE 1 R €/kg</label>
-                                <input type="number" id="precioGRANDE1_R" step="0.01" value="1.40">
-                            </div>
-                            <div>
-                                <label>GRANDE 2 F €/kg</label>
-                                <input type="number" id="precioGRANDE2_F" step="0.01" value="1.20">
-                            </div>
-                            <div>
-                                <label>GRANDE 2 R €/kg</label>
-                                <input type="number" id="precioGRANDE2_R" step="0.01" value="1.20">
-                            </div>
-                            <div>
-                                <label>NORMAL F €/kg</label>
-                                <input type="number" id="precioNORMAL_F" step="0.01" value="1.00">
-                            </div>
-                            <div>
-                                <label>NORMAL R €/kg</label>
-                                <input type="number" id="precioNORMAL_R" step="0.01" value="1.00">
-                            </div>
-                            <div>
-                                <label>EUROPEO F €/kg</label>
-                                <input type="number" id="precioEUROPEO_F" step="0.01" value="0.80">
-                            </div>
-                            <div>
-                                <label>EUROPEO R €/kg</label>
-                                <input type="number" id="precioEUROPEO_R" step="0.01" value="0.80">
-                            </div>
-                            <div>
-                                <label>LACAS F €/kg</label>
-                                <input type="number" id="precioLACAS_F" step="0.01" value="0.60">
-                            </div>
-                            <div>
-                                <label>LACAS R €/kg</label>
-                                <input type="number" id="precioLACAS_R" step="0.01" value="0.60">
-                            </div>
-                        </div>
-                        <button type="button" onclick="guardarPrecios()" style="margin-top: 15px;">💾 Gardar Precos</button>
-                        <button type="button" onclick="restablecerPrezos2026()" style="margin-top: 10px; background:#0d6efd;">♻️ Restablecer prezos 2026</button>
-                    </div>
-                </div>
-
-                <button type="button" style="background:#0d6efd;" onclick="diagnosticoURL()">🔎 Diagnóstico URL</button>
-
-                <div class="form-group" style="margin-top: 20px;">
-                    <label>Opcións de Datos</label>
-                    <button type="button" class="export-btn" onclick="exportarDatos()">📥 Descargar Datos (CSV)</button>
-                    <button type="button" style="background:#0d6efd; margin-top: 10px;" onclick="exportarCopiaJSON()">
-  🧾 Exportar copia (JSON)
-</button>
-
-<button type="button" style="background:#6f42c1; margin-top: 10px;" onclick="abrirImportJSON()">
-  📤 Importar copia (JSON)
-</button>
-
-<input id="importJsonFile" type="file" accept="application/json" style="display:none;">
-
-                    <button type="button" style="background: #fd7e14; margin-top: 10px;" onclick="limpiarTodos()">🗑️ Limpar Todos os Datos</button>
-                </div>
-            </div>
+        <div class="form-group">
+          <label for="tipo">Tipo de Mexillón</label>
+          <select id="tipo" required onchange="actualizarEtiquetaCantidade()">
+            <option value="">Selecciona tipo</option>
+            <option value="EXTRA_F">EXTRA F</option>
+            <option value="EXTRA_R">EXTRA R</option>
+            <option value="GRANDE1_F">GRANDE 1 F</option>
+            <option value="GRANDE1_R">GRANDE 1 R</option>
+            <option value="GRANDE2_F">GRANDE 2 F</option>
+            <option value="GRANDE2_R">GRANDE 2 R</option>
+            <option value="NORMAL_F">NORMAL F</option>
+            <option value="NORMAL_R">NORMAL R</option>
+            <option value="EUROPEO_F">EUROPEO F</option>
+            <option value="EUROPEO_R">EUROPEO R</option>
+            <option value="LACAS_F">LACAS F</option>
+            <option value="LACAS_R">LACAS R</option>
+            <option value="BARCADA">BARCADA</option>
+          </select>
         </div>
+
+        <div class="form-group">
+          <label for="cantidade"><span id="etiquetaCantidade">Cantidade (sacos de 10kg)</span></label>
+          <input type="number" id="cantidade" min="0" step="1" required>
+        </div>
+
+        <div class="form-group">
+          <label for="prezo" id="etiquetaPrezo">Prezo €/kg</label>
+          <input type="number" id="prezo" min="0" step="0.01" required>
+        </div>
+
+        <div id="avisoPorcentaxe" style="background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:10px;border-radius:4px;margin-bottom:10px;display:none;font-size:0.9em;">
+          ⚠️ Os porcentaxes deben sumar exactamente 100%
+        </div>
+
+        <div class="form-group">
+          <label for="volta">Volta</label>
+          <input type="text" id="volta" placeholder="ex: 1, 2, 3...">
+        </div>
+
+        <div class="form-group" style="border:2px solid #667eea;padding:12px;border-radius:6px;background:#f0f4ff;">
+          <label style="font-weight:600;margin-bottom:12px;">Repartición entre Hermanos (%)</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div>
+              <label style="font-size:0.9em;">Juan Antonio</label>
+              <input type="number" id="porcentaxeJA" min="0" max="100" step="0.1" value="0" required>
+            </div>
+            <div>
+              <label style="font-size:0.9em;">Jandro</label>
+              <input type="number" id="porcentaxeJandro" min="0" max="100" step="0.1" value="0" required>
+            </div>
+            <div>
+              <label style="font-size:0.9em;">Jorge</label>
+              <input type="number" id="porcentaxeJorge" min="0" max="100" step="0.1" value="0" required>
+            </div>
+          </div>
+          <div style="font-size:0.85em;color:#666;margin-top:8px;text-align:center;">
+            Total: <strong id="totalPorcentaxe">0</strong>% (debe ser 100%)
+          </div>
+        </div>
+
+        <button type="submit">➕ Engadir Venda</button>
+        <button type="reset" style="background:#6c757d;">🔄 Limpar</button>
+      </form>
     </div>
+
+    <!-- Panel stats -->
+    <div class="panel">
+      <h2>📈 Resultados (Ganancias − Gastos) desde 1 Xaneiro 2026</h2>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Juan Antonio</h3>
+          <div class="value" id="netoJA">0€</div>
+          <div style="font-size:0.8em;color:#666;margin-top:6px;">
+            Gan.: <span id="gananciasJA">0€</span> | Gastos: <span id="gastosJA">0€</span>
+          </div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJA">0</span>% do neto)</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Jandro</h3>
+          <div class="value" id="netoJandro">0€</div>
+          <div style="font-size:0.8em;color:#666;margin-top:6px;">
+            Gan.: <span id="gananciasJandro">0€</span> | Gastos: <span id="gastosJandro">0€</span>
+          </div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJandro">0</span>% do neto)</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Jorge</h3>
+          <div class="value" id="netoJorge">0€</div>
+          <div style="font-size:0.8em;color:#666;margin-top:6px;">
+            Gan.: <span id="gananciasJorge">0€</span> | Gastos: <span id="gastosJorge">0€</span>
+          </div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJorge">0</span>% do neto)</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Total Neto</h3>
+          <div class="value" id="totalNeto">0€</div>
+          <div style="font-size:0.8em;color:#666;margin-top:6px;">
+            Gan. total: <span id="totalGanancias">0€</span> | Gastos total: <span id="totalGastos">0€</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="color:#2c5aa0;margin:20px 0 10px 0;">Repartición por Batea (según filtro de Diario)</h3>
+      <div id="reparticionBatea"></div>
+    </div>
+
+    <!-- Panel tabs -->
+    <div class="panel full-width">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="mostrarTab('diario', event)">📅 Diario</button>
+        <button class="tab-btn" onclick="mostrarTab('gastos', event)">💸 Gastos</button>
+        <button class="tab-btn" onclick="mostrarTab('resumo', event)">📋 Resumo Mensual</button>
+        <button class="tab-btn" onclick="mostrarTab('config', event)">⚙️ Configuración</button>
+      </div>
+
+      <!-- Diario -->
+      <div id="diario" class="tab-content active">
+        <h2>📝 Vendas rexistradas</h2>
+
+        <div class="form-group" style="margin-top:10px;">
+          <label for="filtroData">Ver vendas do día</label>
+          <input type="date" id="filtroData">
+          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+            <button type="button" style="width:auto;background:#6c757d;padding:10px 14px;" onclick="verHoxe()">Hoxe</button>
+            <button type="button" style="width:auto;background:#0d6efd;padding:10px 14px;" onclick="verTodas()">Todas</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+            <tr>
+              <th>Data</th><th>Batea</th><th>Tipo</th><th>Sacos</th><th>Quilos</th><th>Prezo €/kg</th><th>Ganancia €</th>
+              <th>J. Antonio %</th><th>Jandro %</th><th>Jorge %</th><th>Volta</th><th>Acción</th>
+            </tr>
+            </thead>
+            <tbody id="listadoVendas">
+            <tr><td colspan="12" style="text-align:center;color:#999;">Sen datos</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Gastos -->
+      <div id="gastos" class="tab-content">
+        <h2>💸 Gastos por hermano</h2>
+
+        <div id="alertGastos" class="alert" style="display:none;"></div>
+
+        <form id="gastoForm" style="margin-top:10px;">
+          <div class="form-group">
+            <label for="gastoData">Data do gasto</label>
+            <input type="date" id="gastoData" required>
+          </div>
+
+          <div class="form-group">
+            <label for="gastoHermano">Hermano</label>
+            <select id="gastoHermano" required>
+              <option value="JA">Juan Antonio</option>
+              <option value="Jandro">Jandro</option>
+              <option value="Jorge">Jorge</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="gastoImporte">Importe (€)</label>
+            <input type="number" id="gastoImporte" min="0" step="0.01" required>
+          </div>
+
+          <div class="form-group">
+            <label for="gastoConcepto">Concepto (opcional)</label>
+            <input type="text" id="gastoConcepto" placeholder="Gasolina, reparación, peaxes...">
+          </div>
+
+          <button type="submit" style="background:#fd7e14;">➕ Engadir gasto</button>
+        </form>
+
+        <div class="form-group" style="margin-top:18px;">
+          <label for="filtroDataGastos">Ver gastos do día</label>
+          <input type="date" id="filtroDataGastos">
+          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+            <button type="button" style="width:auto;background:#6c757d;padding:10px 14px;" onclick="verGastosHoxe()">Hoxe</button>
+            <button type="button" style="width:auto;background:#0d6efd;padding:10px 14px;" onclick="verGastosTodos()">Todas</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+            <tr><th>Data</th><th>Hermano</th><th>Importe</th><th>Concepto</th><th>Acción</th></tr>
+            </thead>
+            <tbody id="listadoGastos">
+            <tr><td colspan="5" style="text-align:center;color:#999;">Sen datos</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Resumo -->
+      <div id="resumo" class="tab-content">
+        <h2>📊 Resumo de Vendas por Mes</h2>
+        <div id="resumoMensual"></div>
+      </div>
+
+      <!-- Config -->
+      <div id="config" class="tab-content">
+        <h2>⚙️ Configuración de Precos Estándar (2026)</h2>
+
+        <div class="form-group" style="margin-top:20px;">
+          <label>Precos de Referencia por Tipo</label>
+          <div style="background:white;padding:15px;border-radius:6px;margin-top:10px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+              <div><label>EXTRA F €/kg</label><input type="number" id="precioEXTRA_F" step="0.01" value="1.90"></div>
+              <div><label>EXTRA R €/kg</label><input type="number" id="precioEXTRA_R" step="0.01" value="1.90"></div>
+              <div><label>GRANDE 1 F €/kg</label><input type="number" id="precioGRANDE1_F" step="0.01" value="1.40"></div>
+              <div><label>GRANDE 1 R €/kg</label><input type="number" id="precioGRANDE1_R" step="0.01" value="1.40"></div>
+              <div><label>GRANDE 2 F €/kg</label><input type="number" id="precioGRANDE2_F" step="0.01" value="1.20"></div>
+              <div><label>GRANDE 2 R €/kg</label><input type="number" id="precioGRANDE2_R" step="0.01" value="1.20"></div>
+              <div><label>NORMAL F €/kg</label><input type="number" id="precioNORMAL_F" step="0.01" value="1.00"></div>
+              <div><label>NORMAL R €/kg</label><input type="number" id="precioNORMAL_R" step="0.01" value="1.00"></div>
+              <div><label>EUROPEO F €/kg</label><input type="number" id="precioEUROPEO_F" step="0.01" value="0.80"></div>
+              <div><label>EUROPEO R €/kg</label><input type="number" id="precioEUROPEO_R" step="0.01" value="0.80"></div>
+              <div><label>LACAS F €/kg</label><input type="number" id="precioLACAS_F" step="0.01" value="0.60"></div>
+              <div><label>LACAS R €/kg</label><input type="number" id="precioLACAS_R" step="0.01" value="0.60"></div>
+            </div>
+            <button type="button" onclick="guardarPrecios()" style="margin-top:15px;">💾 Gardar Precos</button>
+            <button type="button" onclick="restablecerPrezos2026()" style="margin-top:10px;background:#0d6efd;">♻️ Restablecer prezos 2026</button>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:20px;">
+          <label>Opcións de Datos</label>
+
+          <button type="button" class="export-btn" onclick="exportarExcel()">📥 Descargar Excel (XLSX)</button>
+
+          <button type="button" style="background:#0d6efd;margin-top:10px;" onclick="exportarCopiaJSON()">🧾 Exportar copia (JSON)</button>
+          <button type="button" style="background:#6f42c1;margin-top:10px;" onclick="abrirImportJSON()">📤 Importar copia (JSON)</button>
+          <input id="importJsonFile" type="file" accept="application/json" style="display:none;">
+
+          <button type="button" style="background:#0d6efd;margin-top:10px;" onclick="diagnosticoURL()">🔎 Diagnóstico URL</button>
+
+          <button type="button" style="background:#fd7e14;margin-top:10px;" onclick="limpiarTodos()">🗑️ Limpar Todos os Datos</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Modal editar venda -->
 <div id="modalEditar" class="modal" style="display:none;">
-    <div class="modal-content">
-        <h2 style="color:#2c5aa0; margin-bottom: 12px;">✏️ Editar venda</h2>
-        <div id="alertEditar" class="alert error" style="display:none;"></div>
+  <div class="modal-content">
+    <h2 style="color:#2c5aa0;margin-bottom:12px;">✏️ Editar venda</h2>
+    <div id="alertEditar" class="alert error" style="display:none;"></div>
 
-        <input type="hidden" id="editId">
+    <input type="hidden" id="editId">
 
-        <div class="form-group">
-            <label for="editData">Data</label>
-            <input type="date" id="editData" required>
-        </div>
+    <div class="form-group"><label for="editData">Data</label><input type="date" id="editData" required></div>
 
-        <div class="form-group">
-            <label for="editBatea">Batea</label>
-            <select id="editBatea" required>
-                <option value="GONDAR">GONDAR</option>
-                <option value="CH3">CH 3</option>
-                <option value="VILLALONGA">VILLALONGA</option>
-                <option value="ROSI">ROSI</option>
-                <option value="NOLI">NOLI</option>
-                <option value="CH4">CH 4</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="editTipo">Tipo</label>
-            <select id="editTipo" required onchange="actualizarEtiquetaCantidadeEditar()">
-                <option value="EXTRA_F">EXTRA F</option>
-                <option value="EXTRA_R">EXTRA R</option>
-                <option value="GRANDE1_F">GRANDE 1 F</option>
-                <option value="GRANDE1_R">GRANDE 1 R</option>
-                <option value="GRANDE2_F">GRANDE 2 F</option>
-                <option value="GRANDE2_R">GRANDE 2 R</option>
-                <option value="NORMAL_F">NORMAL F</option>
-                <option value="NORMAL_R">NORMAL R</option>
-                <option value="EUROPEO_F">EUROPEO F</option>
-                <option value="EUROPEO_R">EUROPEO R</option>
-                <option value="LACAS_F">LACAS F</option>
-                <option value="LACAS_R">LACAS R</option>
-                <option value="BARCADA">BARCADA</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="editCantidade"><span id="editEtiquetaCantidade">Cantidade (sacos de 10kg)</span></label>
-            <input type="number" id="editCantidade" min="0" step="1" required>
-        </div>
-
-        <div class="form-group">
-            <label for="editPrezo">Prezo €/kg (se o deixas baleiro, úsase o automático)</label>
-            <input type="number" id="editPrezo" min="0" step="0.01" placeholder="Ex: 1.40">
-        </div>
-
-        <div class="form-group">
-            <label for="editVolta">Volta</label>
-            <input type="text" id="editVolta" placeholder="ex: 1, 2, 3...">
-        </div>
-
-        <div class="form-group" style="border: 2px solid #667eea; padding: 12px; border-radius: 6px; background: #f0f4ff;">
-            <label style="font-weight: 600; margin-bottom: 12px;">Repartición entre Hermanos (%)</label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                <div>
-                    <label style="font-size: 0.9em;">Juan Antonio</label>
-                    <input type="number" id="editPorcentaxeJA" min="0" max="100" step="0.1" required>
-                </div>
-                <div>
-                    <label style="font-size: 0.9em;">Jandro</label>
-                    <input type="number" id="editPorcentaxeJandro" min="0" max="100" step="0.1" required>
-                </div>
-                <div>
-                    <label style="font-size: 0.9em;">Jorge</label>
-                    <input type="number" id="editPorcentaxeJorge" min="0" max="100" step="0.1" required>
-                </div>
-            </div>
-        </div>
-
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px;">
-            <button type="button" style="width:auto; padding:12px 16px;" onclick="gardarEdicion()">💾 Gardar cambios</button>
-            <button type="button" style="width:auto; padding:12px 16px; background:#6c757d;" onclick="pecharModalEditar()">Cancelar</button>
-        </div>
+    <div class="form-group">
+      <label for="editBatea">Batea</label>
+      <select id="editBatea" required>
+        <option value="GONDAR">GONDAR</option><option value="CH3">CH 3</option><option value="VILLALONGA">VILLALONGA</option>
+        <option value="ROSI">ROSI</option><option value="NOLI">NOLI</option><option value="CH4">CH 4</option>
+      </select>
     </div>
+
+    <div class="form-group">
+      <label for="editTipo">Tipo</label>
+      <select id="editTipo" required onchange="actualizarEtiquetaCantidadeEditar()">
+        <option value="EXTRA_F">EXTRA F</option><option value="EXTRA_R">EXTRA R</option>
+        <option value="GRANDE1_F">GRANDE 1 F</option><option value="GRANDE1_R">GRANDE 1 R</option>
+        <option value="GRANDE2_F">GRANDE 2 F</option><option value="GRANDE2_R">GRANDE 2 R</option>
+        <option value="NORMAL_F">NORMAL F</option><option value="NORMAL_R">NORMAL R</option>
+        <option value="EUROPEO_F">EUROPEO F</option><option value="EUROPEO_R">EUROPEO R</option>
+        <option value="LACAS_F">LACAS F</option><option value="LACAS_R">LACAS R</option>
+        <option value="BARCADA">BARCADA</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="editCantidade"><span id="editEtiquetaCantidade">Cantidade (sacos de 10kg)</span></label>
+      <input type="number" id="editCantidade" min="0" step="1" required>
+    </div>
+
+    <div class="form-group">
+      <label for="editPrezo">Prezo €/kg (se o deixas baleiro, úsase o automático)</label>
+      <input type="number" id="editPrezo" min="0" step="0.01" placeholder="Ex: 1.40">
+    </div>
+
+    <div class="form-group"><label for="editVolta">Volta</label><input type="text" id="editVolta" placeholder="ex: 1, 2, 3..."></div>
+
+    <div class="form-group" style="border:2px solid #667eea;padding:12px;border-radius:6px;background:#f0f4ff;">
+      <label style="font-weight:600;margin-bottom:12px;">Repartición entre Hermanos (%)</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div><label style="font-size:0.9em;">Juan Antonio</label><input type="number" id="editPorcentaxeJA" min="0" max="100" step="0.1" required></div>
+        <div><label style="font-size:0.9em;">Jandro</label><input type="number" id="editPorcentaxeJandro" min="0" max="100" step="0.1" required></div>
+        <div><label style="font-size:0.9em;">Jorge</label><input type="number" id="editPorcentaxeJorge" min="0" max="100" step="0.1" required></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button type="button" style="width:auto;padding:12px 16px;" onclick="gardarEdicion()">💾 Gardar cambios</button>
+      <button type="button" style="width:auto;padding:12px 16px;background:#6c757d;" onclick="pecharModalEditar()">Cancelar</button>
+    </div>
+  </div>
 </div>
 
 <!-- Modal editar gasto -->
 <div id="modalEditarGasto" class="modal" style="display:none;">
-    <div class="modal-content">
-        <h2 style="color:#2c5aa0; margin-bottom: 12px;">✏️ Editar gasto</h2>
-        <div id="alertEditarGasto" class="alert error" style="display:none;"></div>
+  <div class="modal-content">
+    <h2 style="color:#2c5aa0;margin-bottom:12px;">✏️ Editar gasto</h2>
+    <div id="alertEditarGasto" class="alert error" style="display:none;"></div>
 
-        <input type="hidden" id="editGastoId">
+    <input type="hidden" id="editGastoId">
 
-        <div class="form-group">
-            <label for="editGastoData">Data</label>
-            <input type="date" id="editGastoData" required>
-        </div>
+    <div class="form-group"><label for="editGastoData">Data</label><input type="date" id="editGastoData" required></div>
 
-        <div class="form-group">
-            <label for="editGastoHermano">Hermano</label>
-            <select id="editGastoHermano" required>
-                <option value="JA">Juan Antonio</option>
-                <option value="Jandro">Jandro</option>
-                <option value="Jorge">Jorge</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <label for="editGastoImporte">Importe (€)</label>
-            <input type="number" id="editGastoImporte" min="0" step="0.01" required>
-        </div>
-
-        <div class="form-group">
-            <label for="editGastoConcepto">Concepto (opcional)</label>
-            <input type="text" id="editGastoConcepto">
-        </div>
-
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px;">
-            <button type="button" style="width:auto; padding:12px 16px;" onclick="gardarEdicionGasto()">💾 Gardar cambios</button>
-            <button type="button" style="width:auto; padding:12px 16px; background:#6c757d;" onclick="pecharModalEditarGasto()">Cancelar</button>
-        </div>
+    <div class="form-group">
+      <label for="editGastoHermano">Hermano</label>
+      <select id="editGastoHermano" required>
+        <option value="JA">Juan Antonio</option><option value="Jandro">Jandro</option><option value="Jorge">Jorge</option>
+      </select>
     </div>
+
+    <div class="form-group"><label for="editGastoImporte">Importe (€)</label><input type="number" id="editGastoImporte" min="0" step="0.01" required></div>
+    <div class="form-group"><label for="editGastoConcepto">Concepto (opcional)</label><input type="text" id="editGastoConcepto"></div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button type="button" style="width:auto;padding:12px 16px;" onclick="gardarEdicionGasto()">💾 Gardar cambios</button>
+      <button type="button" style="width:auto;padding:12px 16px;background:#6c757d;" onclick="pecharModalEditarGasto()">Cancelar</button>
+    </div>
+  </div>
 </div>
-// ====== COPIA SEGURIDAD JSON (EXPORT / IMPORT) ======
-function exportarCopiaJSON() {
-  const backup = {
-    schema: 1,
-    createdAt: new Date().toISOString(),
-    origin: location.origin,
-    vendas: Array.isArray(vendas) ? vendas : [],
-    gastos: Array.isArray(gastos) ? gastos : [],
-    precos: precos || {},
-    precos_version: localStorage.getItem(PREZOS_VERSION_KEY) || PREZOS_VERSION
-  };
 
-  const json = JSON.stringify(backup, null, 2); // JSON legible [web:394]
-  const blob = new Blob([json], { type: "application/json;charset=utf-8" });
-  const url = URL.createObjectURL(blob); // [web:396]
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `chapelo-backup-${new Date().toISOString().slice(0,10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-
-  // Limpieza del object URL
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function abrirImportJSON() {
-  const input = document.getElementById("importJsonFile");
-  input.value = "";
-  input.click();
-}
-
-document.getElementById("importJsonFile").addEventListener("change", (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const data = JSON.parse(String(reader.result || ""));
-      if (!data || typeof data !== "object") throw new Error("JSON inválido");
-
-      const nuevasVendas = Array.isArray(data.vendas) ? data.vendas : [];
-      const nuevosGastos = Array.isArray(data.gastos) ? data.gastos : [];
-      const nuevosPrecos = (data.precos && typeof data.precos === "object") ? data.precos : null;
-
-      const reemplazar = confirm(
-        "¿Importar copia?\n\nOK = REEMPLAZAR todos los datos actuales\nCancelar = MEZCLAR (mantener y añadir lo que falte)"
-      );
-
-      if (reemplazar) {
-        vendas = nuevasVendas;
-        gastos = nuevosGastos;
-        if (nuevosPrecos) precos = nuevosPrecos;
-      } else {
-        // Mezcla por id para evitar duplicados
-        const idsV = new Set((vendas || []).map(v => v && v.id).filter(Boolean));
-        nuevasVendas.forEach(v => {
-          if (!v || !v.id) { v.id = Date.now() + Math.floor(Math.random() * 100000); }
-          if (!idsV.has(v.id)) {
-            vendas.push(v);
-            idsV.add(v.id);
-          }
-        });
-
-        const idsG = new Set((gastos || []).map(g => g && g.id).filter(Boolean));
-        nuevosGastos.forEach(g => {
-          if (!g || !g.id) { g.id = Date.now() + Math.floor(Math.random() * 100000); }
-          if (!idsG.has(g.id)) {
-            gastos.push(g);
-            idsG.add(g.id);
-          }
-        });
-
-        if (nuevosPrecos) precos = nuevosPrecos;
-      }
-
-      guardarDatos();       // guarda en localStorage con JSON.stringify [web:291]
-      actualizarFormulario();
-      alert("✅ Importación completada");
-    } catch (err) {
-      alert("❌ No se pudo importar el archivo JSON. Asegúrate de que es una copia de la app.");
-    }
-  };
-
-  reader.readAsText(file); // [web:383]
-});
+<!-- SheetJS library para exportar XLSX -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 
 <script>
-    // === PREZOS 2026 ===
-    const PREZOS_VERSION = '2026';
-    const PREZOS_VERSION_KEY = 'precos_amegrove_version';
+  // === PREZOS 2026 ===
+  const PREZOS_VERSION = '2026';
+  const PREZOS_VERSION_KEY = 'precos_amegrove_version';
 
-    const PREZOS_2026 = {
-        'EXTRA_F': 1.90, 'EXTRA_R': 1.90,
-        'GRANDE1_F': 1.40, 'GRANDE1_R': 1.40,
-        'GRANDE2_F': 1.20, 'GRANDE2_R': 1.20,
-        'NORMAL_F': 1.00, 'NORMAL_R': 1.00,
-        'EUROPEO_F': 0.80, 'EUROPEO_R': 0.80,
-        'LACAS_F': 0.60, 'LACAS_R': 0.60,
-        'BARCADA': 0
+  const PREZOS_2026 = {
+    'EXTRA_F': 1.90, 'EXTRA_R': 1.90,
+    'GRANDE1_F': 1.40, 'GRANDE1_R': 1.40,
+    'GRANDE2_F': 1.20, 'GRANDE2_R': 1.20,
+    'NORMAL_F': 1.00, 'NORMAL_R': 1.00,
+    'EUROPEO_F': 0.80, 'EUROPEO_R': 0.80,
+    'LACAS_F': 0.60, 'LACAS_R': 0.60,
+    'BARCADA': 0
+  };
+
+  let vendas = [];
+  let gastos = [];
+  let precos = { ...PREZOS_2026 };
+
+  // Filtros
+  let filtroData = new Date().toISOString().split('T')[0];
+  let verTodasAsVendas = false;
+
+  let filtroDataGastos = new Date().toISOString().split('T')[0];
+  let verTodosOsGastos = false;
+
+  // Defaults fechas
+  document.getElementById('data').valueAsDate = new Date();
+  document.getElementById('gastoData').valueAsDate = new Date();
+
+  function verHoxe() {
+    filtroData = new Date().toISOString().split('T')[0];
+    verTodasAsVendas = false;
+    const fd = document.getElementById('filtroData');
+    if (fd) fd.value = filtroData;
+    actualizarListado();
+    actualizarReparticion();
+  }
+
+  function verTodas() {
+    verTodasAsVendas = true;
+    actualizarListado();
+    actualizarReparticion();
+  }
+
+  function verGastosHoxe() {
+    filtroDataGastos = new Date().toISOString().split('T')[0];
+    verTodosOsGastos = false;
+    const fd = document.getElementById('filtroDataGastos');
+    if (fd) fd.value = filtroDataGastos;
+    actualizarListadoGastos();
+  }
+
+  function verGastosTodos() {
+    verTodosOsGastos = true;
+    actualizarListadoGastos();
+  }
+
+  function restablecerPrezos2026() {
+    precos = { ...PREZOS_2026 };
+    localStorage.setItem('precos_amegrove', JSON.stringify(precos));
+    localStorage.setItem(PREZOS_VERSION_KEY, PREZOS_VERSION);
+    actualizarFormulario();
+    actualizarEtiquetaCantidade();
+    mostrarAlerta('✅ Prezos 2026 restablecidos');
+  }
+
+  function cargarDatos() {
+    const datosGuardados = localStorage.getItem('vendas_amegrove');
+    const gastosGuardados = localStorage.getItem('gastos_amegrove');
+    const precosGuardados = localStorage.getItem('precos_amegrove');
+    const versionGuardada = localStorage.getItem(PREZOS_VERSION_KEY);
+
+    if (datosGuardados) vendas = JSON.parse(datosGuardados);
+    if (gastosGuardados) gastos = JSON.parse(gastosGuardados);
+
+    if (precosGuardados && versionGuardada === PREZOS_VERSION) {
+      precos = JSON.parse(precosGuardados);
+    } else {
+      precos = { ...PREZOS_2026 };
+      localStorage.setItem('precos_amegrove', JSON.stringify(precos));
+      localStorage.setItem(PREZOS_VERSION_KEY, PREZOS_VERSION);
+    }
+
+    const inputFiltro = document.getElementById('filtroData');
+    if (inputFiltro) {
+      inputFiltro.value = filtroData;
+      inputFiltro.addEventListener('change', (e) => {
+        filtroData = e.target.value;
+        verTodasAsVendas = false;
+        actualizarListado();
+        actualizarReparticion();
+      });
+    }
+
+    const inputFiltroG = document.getElementById('filtroDataGastos');
+    if (inputFiltroG) {
+      inputFiltroG.value = filtroDataGastos;
+      inputFiltroG.addEventListener('change', (e) => {
+        filtroDataGastos = e.target.value;
+        verTodosOsGastos = false;
+        actualizarListadoGastos();
+      });
+    }
+
+    actualizarEtiquetaCantidade();
+    actualizarTotalPorcentaxe();
+    actualizarFormulario();
+
+    verHoxe();
+    verGastosHoxe();
+
+    // Aviso si estás en Safari (no icono) y no ves vendas/gastos
+    try {
+      if (!window.navigator.standalone) {
+        const tieneVendas = !!localStorage.getItem('vendas_amegrove');
+        const tieneGastos = !!localStorage.getItem('gastos_amegrove');
+        if (!tieneVendas && !tieneGastos) {
+          mostrarAlerta('ℹ️ Estás en Safari. Se non ves os datos, exporta a copia (JSON) dende o icono e impórtaa aquí.', 'error');
+        }
+      }
+    } catch (_) {}
+  }
+
+  function guardarDatos() {
+    localStorage.setItem('vendas_amegrove', JSON.stringify(vendas));
+    localStorage.setItem('gastos_amegrove', JSON.stringify(gastos));
+    localStorage.setItem('precos_amegrove', JSON.stringify(precos));
+    localStorage.setItem(PREZOS_VERSION_KEY, PREZOS_VERSION);
+  }
+
+  // ===== VENDAS =====
+  document.getElementById('entradaForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const data = document.getElementById('data').value;
+    const batea = document.getElementById('batea').value;
+    const tipo = document.getElementById('tipo').value;
+    const cantidade = parseInt(document.getElementById('cantidade').value, 10);
+    const prezo = parseFloat(document.getElementById('prezo').value);
+    const volta = document.getElementById('volta').value;
+
+    const porcentaxeJA = parseFloat(document.getElementById('porcentaxeJA').value);
+    const porcentaxeJandro = parseFloat(document.getElementById('porcentaxeJandro').value);
+    const porcentaxeJorge = parseFloat(document.getElementById('porcentaxeJorge').value);
+
+    if (!data || !batea || !tipo || !cantidade || Number.isNaN(prezo)) {
+      mostrarAlerta('Por favor completa todos os campos obrigatorios', 'error');
+      return;
+    }
+
+    const totalPorcentaxe = (porcentaxeJA || 0) + (porcentaxeJandro || 0) + (porcentaxeJorge || 0);
+    if (Math.abs(totalPorcentaxe - 100) > 0.01) {
+      mostrarAlerta('Os porcentaxes deben sumar exactamente 100%', 'error');
+      return;
+    }
+
+    const esBaracada = tipo === 'BARCADA';
+    const quilos = esBaracada ? cantidade : cantidade * 10;
+    const prezoAutomatico = esBaracada ? prezo : precos[tipo];
+
+    const venda = {
+      id: Date.now(),
+      data, batea, tipo,
+      cantidade: esBaracada ? 0 : cantidade,
+      quilos,
+      prezo: prezoAutomatico,
+      ganancia: quilos * prezoAutomatico,
+      volta,
+      esBaracada,
+      cantidadeBarcada: esBaracada ? cantidade : null,
+      porcentaxeJA, porcentaxeJandro, porcentaxeJorge
     };
 
-    // Datos en memoria
-    let vendas = [];
-    let gastos = [];
-    let precos = { ...PREZOS_2026 };
+    vendas.push(venda);
+    guardarDatos();
 
-    // Filtro ventas
-    let filtroData = new Date().toISOString().split('T')[0];
-    let verTodasAsVendas = false;
-
-    // Filtro gastos
-    let filtroDataGastos = new Date().toISOString().split('T')[0];
-    let verTodosOsGastos = false;
-
-    // Defaults fechas
+    this.reset();
     document.getElementById('data').valueAsDate = new Date();
+    actualizarEtiquetaCantidade();
+    actualizarTotalPorcentaxe();
+
+    verHoxe();
+    actualizarFormulario();
+    mostrarAlerta('✅ Venda engadida correctamente!');
+  });
+
+  // ===== GASTOS =====
+  document.getElementById('gastoForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const data = document.getElementById('gastoData').value;
+    const hermano = document.getElementById('gastoHermano').value;
+    const importe = parseFloat(document.getElementById('gastoImporte').value);
+    const concepto = document.getElementById('gastoConcepto').value || '';
+
+    if (!data || !hermano || Number.isNaN(importe) || importe <= 0) {
+      mostrarAlertaGastos('Introduce unha data e un importe válido (> 0).', 'error');
+      return;
+    }
+
+    const gasto = { id: Date.now(), data, hermano, importe, concepto };
+    gastos.push(gasto);
+    guardarDatos();
+
+    this.reset();
     document.getElementById('gastoData').valueAsDate = new Date();
 
-    function verHoxe() {
-        filtroData = new Date().toISOString().split('T')[0];
-        verTodasAsVendas = false;
-        const fd = document.getElementById('filtroData');
-        if (fd) fd.value = filtroData;
-        actualizarListado();
-        actualizarReparticion();
+    verGastosHoxe();
+    actualizarFormulario();
+    mostrarAlertaGastos('✅ Gasto engadido correctamente!');
+  });
+
+  function mostrarAlertaGastos(mensaje, tipo='success') {
+    const alertDiv = document.getElementById('alertGastos');
+    alertDiv.textContent = mensaje;
+    alertDiv.className = 'alert' + (tipo === 'error' ? ' error' : '');
+    alertDiv.style.display = 'block';
+    setTimeout(() => { alertDiv.style.display = 'none'; }, 3000);
+  }
+
+  function actualizarFormulario() {
+    actualizarListado();
+    actualizarListadoGastos();
+    actualizarEstadisticas();
+    actualizarReparticion();
+    actualizarResumen();
+  }
+
+  function actualizarListado() {
+    const tbody = document.getElementById('listadoVendas');
+    const lista = verTodasAsVendas ? vendas : vendas.filter(v => v.data === filtroData);
+
+    if (lista.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="12" style="text-align:center;color:#999;">
+        Sen datos ${verTodasAsVendas ? '' : 'para ' + filtroData}
+      </td></tr>`;
+      return;
     }
 
-    function verTodas() {
-        verTodasAsVendas = true;
-        actualizarListado();
-        actualizarReparticion();
+    tbody.innerHTML = lista.slice().sort((a,b)=> (a.data===b.data ? (b.id-a.id) : (a.data>b.data ? -1 : 1))).map(v => `
+      <tr>
+        <td>${v.data}</td>
+        <td><strong>${v.batea}</strong></td>
+        <td>${v.tipo}</td>
+        <td>${v.esBaracada ? (v.cantidadeBarcada + ' kg') : (v.cantidade + ' sacos')}</td>
+        <td>${v.quilos} kg</td>
+        <td>${v.prezo.toFixed(2)}€</td>
+        <td><strong>${v.ganancia.toFixed(2)}€</strong></td>
+        <td>${v.porcentaxeJA}%</td>
+        <td>${v.porcentaxeJandro}%</td>
+        <td>${v.porcentaxeJorge}%</td>
+        <td>${v.volta || '-'}</td>
+        <td style="white-space:nowrap;">
+          <button type="button" style="background:#0d6efd;color:#fff;border:none;padding:6px 10px;border-radius:3px;cursor:pointer;font-size:0.85em;margin-right:8px;"
+                  onclick="abrirEditar(${v.id})">Editar</button>
+          <button class="delete-btn" onclick="eliminarVenda(${v.id})">Borrar</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function actualizarListadoGastos() {
+    const tbody = document.getElementById('listadoGastos');
+    const lista = verTodosOsGastos ? gastos : gastos.filter(g => g.data === filtroDataGastos);
+
+    if (lista.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">
+        Sen datos ${verTodosOsGastos ? '' : 'para ' + filtroDataGastos}
+      </td></tr>`;
+      return;
     }
 
-    function verGastosHoxe() {
-        filtroDataGastos = new Date().toISOString().split('T')[0];
-        verTodosOsGastos = false;
-        const fd = document.getElementById('filtroDataGastos');
-        if (fd) fd.value = filtroDataGastos;
-        actualizarListadoGastos();
+    const nombre = (h) => h === 'JA' ? 'Juan Antonio' : h;
+
+    tbody.innerHTML = lista.slice().sort((a,b)=> (a.data===b.data ? (b.id-a.id) : (a.data>b.data ? -1 : 1))).map(g => `
+      <tr>
+        <td>${g.data}</td>
+        <td><strong>${nombre(g.hermano)}</strong></td>
+        <td>${g.importe.toFixed(2)}€</td>
+        <td>${(g.concepto || '-')}</td>
+        <td style="white-space:nowrap;">
+          <button type="button" style="background:#0d6efd;color:#fff;border:none;padding:6px 10px;border-radius:3px;cursor:pointer;font-size:0.85em;margin-right:8px;"
+                  onclick="abrirEditarGasto(${g.id})">Editar</button>
+          <button class="delete-btn" onclick="eliminarGasto(${g.id})">Borrar</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function actualizarEstadisticas() {
+    const inicioAno = '2026-01-01';
+    const vendasDesdeInicio = vendas.filter(v => v.data >= inicioAno);
+    const gastosDesdeInicio = gastos.filter(g => g.data >= inicioAno);
+
+    let gananciasJA=0, gananciasJandro=0, gananciasJorge=0;
+    vendasDesdeInicio.forEach(v => {
+      gananciasJA += v.ganancia * (v.porcentaxeJA / 100);
+      gananciasJandro += v.ganancia * (v.porcentaxeJandro / 100);
+      gananciasJorge += v.ganancia * (v.porcentaxeJorge / 100);
+    });
+
+    let gastosJA=0, gastosJandro=0, gastosJorge=0;
+    gastosDesdeInicio.forEach(g => {
+      if (g.hermano === 'JA') gastosJA += g.importe;
+      if (g.hermano === 'Jandro') gastosJandro += g.importe;
+      if (g.hermano === 'Jorge') gastosJorge += g.importe;
+    });
+
+    const netoJA = gananciasJA - gastosJA;
+    const netoJandro = gananciasJandro - gastosJandro;
+    const netoJorge = gananciasJorge - gastosJorge;
+
+    const totalGanancias = gananciasJA + gananciasJandro + gananciasJorge;
+    const totalGastos = gastosJA + gastosJandro + gastosJorge;
+    const totalNeto = netoJA + netoJandro + netoJorge;
+
+    const pNetoJA = totalNeto !== 0 ? (netoJA / totalNeto * 100) : 0;
+    const pNetoJandro = totalNeto !== 0 ? (netoJandro / totalNeto * 100) : 0;
+    const pNetoJorge = totalNeto !== 0 ? (netoJorge / totalNeto * 100) : 0;
+
+    document.getElementById('gananciasJA').textContent = gananciasJA.toFixed(2) + '€';
+    document.getElementById('gananciasJandro').textContent = gananciasJandro.toFixed(2) + '€';
+    document.getElementById('gananciasJorge').textContent = gananciasJorge.toFixed(2) + '€';
+    document.getElementById('totalGanancias').textContent = totalGanancias.toFixed(2) + '€';
+
+    document.getElementById('gastosJA').textContent = gastosJA.toFixed(2) + '€';
+    document.getElementById('gastosJandro').textContent = gastosJandro.toFixed(2) + '€';
+    document.getElementById('gastosJorge').textContent = gastosJorge.toFixed(2) + '€';
+    document.getElementById('totalGastos').textContent = totalGastos.toFixed(2) + '€';
+
+    document.getElementById('netoJA').textContent = netoJA.toFixed(2) + '€';
+    document.getElementById('netoJandro').textContent = netoJandro.toFixed(2) + '€';
+    document.getElementById('netoJorge').textContent = netoJorge.toFixed(2) + '€';
+    document.getElementById('totalNeto').textContent = totalNeto.toFixed(2) + '€';
+
+    document.getElementById('porcentaxeNetoJA').textContent = pNetoJA.toFixed(1);
+    document.getElementById('porcentaxeNetoJandro').textContent = pNetoJandro.toFixed(1);
+    document.getElementById('porcentaxeNetoJorge').textContent = pNetoJorge.toFixed(1);
+  }
+
+  function actualizarReparticion() {
+    const lista = verTodasAsVendas ? vendas : vendas.filter(v => v.data === filtroData);
+    const reparticion = {};
+
+    lista.forEach(v => {
+      if (!reparticion[v.batea]) reparticion[v.batea] = { sacos: 0, quilos: 0, ganancia: 0 };
+      if (!v.esBaracada) reparticion[v.batea].sacos += v.cantidade;
+      reparticion[v.batea].quilos += v.quilos;
+      reparticion[v.batea].ganancia += v.ganancia;
+    });
+
+    const html = Object.entries(reparticion).map(([batea, d]) => `
+      <div class="summary-row">
+        <span><strong>${batea}</strong></span>
+        <span>${d.sacos} sacos | ${d.quilos} kg | <strong>${d.ganancia.toFixed(2)}€</strong></span>
+      </div>
+    `).join('');
+
+    document.getElementById('reparticionBatea').innerHTML = html || '<p style="color:#999;">Sen datos</p>';
+  }
+
+  function actualizarResumen() {
+    const resumenPorMes = {};
+    vendas.forEach(v => {
+      const mes = v.data.substring(0, 7);
+      if (!resumenPorMes[mes]) resumenPorMes[mes] = { sacos: 0, quilos: 0, ganancia: 0, registros: 0 };
+      if (!v.esBaracada) resumenPorMes[mes].sacos += v.cantidade;
+      resumenPorMes[mes].quilos += v.quilos;
+      resumenPorMes[mes].ganancia += v.ganancia;
+      resumenPorMes[mes].registros++;
+    });
+
+    const html = Object.entries(resumenPorMes).sort().reverse().map(([mes, d]) => `
+      <div class="month-summary">
+        <h3>${new Date(mes + '-01').toLocaleDateString('gl-ES', {month:'long', year:'numeric'})}</h3>
+        <div class="summary-row"><span>Rexistros:</span><strong>${d.registros}</strong></div>
+        <div class="summary-row"><span>Total de Sacos:</span><strong>${d.sacos}</strong></div>
+        <div class="summary-row"><span>Total de Quilos:</span><strong>${d.quilos}</strong></div>
+        <div class="summary-row"><span>Total de Ganancias:</span><strong style="color:#28a745;">${d.ganancia.toFixed(2)}€</strong></div>
+      </div>
+    `).join('');
+
+    document.getElementById('resumoMensual').innerHTML = html || '<p style="color:#999;">Sen datos</p>';
+  }
+
+  function eliminarVenda(id) {
+    if (confirm('¿Estás seguro de que queres borrar esta venda?')) {
+      vendas = vendas.filter(v => v.id !== id);
+      guardarDatos();
+      actualizarFormulario();
+      mostrarAlerta('✅ Venda eliminada');
+    }
+  }
+
+  function eliminarGasto(id) {
+    if (confirm('¿Estás seguro de que queres borrar este gasto?')) {
+      gastos = gastos.filter(g => g.id !== id);
+      guardarDatos();
+      actualizarFormulario();
+      mostrarAlertaGastos('✅ Gasto eliminado');
+    }
+  }
+
+  function mostrarTab(tab, ev) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+    if (ev && ev.target) ev.target.classList.add('active');
+  }
+
+  function guardarPrecios() {
+    precos = {
+      'EXTRA_F': parseFloat(document.getElementById('precioEXTRA_F').value),
+      'EXTRA_R': parseFloat(document.getElementById('precioEXTRA_R').value),
+      'GRANDE1_F': parseFloat(document.getElementById('precioGRANDE1_F').value),
+      'GRANDE1_R': parseFloat(document.getElementById('precioGRANDE1_R').value),
+      'GRANDE2_F': parseFloat(document.getElementById('precioGRANDE2_F').value),
+      'GRANDE2_R': parseFloat(document.getElementById('precioGRANDE2_R').value),
+      'NORMAL_F': parseFloat(document.getElementById('precioNORMAL_F').value),
+      'NORMAL_R': parseFloat(document.getElementById('precioNORMAL_R').value),
+      'EUROPEO_F': parseFloat(document.getElementById('precioEUROPEO_F').value),
+      'EUROPEO_R': parseFloat(document.getElementById('precioEUROPEO_R').value),
+      'LACAS_F': parseFloat(document.getElementById('precioLACAS_F').value),
+      'LACAS_R': parseFloat(document.getElementById('precioLACAS_R').value),
+      'BARCADA': 0
+    };
+    guardarDatos();
+    mostrarAlerta('✅ Precos gardados correctamente');
+    actualizarEtiquetaCantidade();
+  }
+
+  // ====== EXPORTAR EXCEL (XLSX con SheetJS) ======
+  function exportarExcel() {
+    if (vendas.length === 0 && gastos.length === 0) {
+      mostrarAlerta('Non hai datos para exportar', 'error');
+      return;
     }
 
-    function verGastosTodos() {
-        verTodosOsGastos = true;
-        actualizarListadoGastos();
+    const wb = XLSX.utils.book_new();
+
+    // Hoja 1: Vendas
+    const vendasData = [
+      ['Data', 'Batea', 'Tipo', 'Sacos', 'Quilos', 'Prezo €/kg', 'Ganancia €', 'JA %', 'Jandro %', 'Jorge %', 'Volta']
+    ];
+    vendas.forEach(v => {
+      vendasData.push([
+        v.data,
+        v.batea,
+        v.tipo,
+        v.esBaracada ? '' : v.cantidade,
+        v.quilos,
+        v.prezo,
+        v.ganancia,
+        v.porcentaxeJA,
+        v.porcentaxeJandro,
+        v.porcentaxeJorge,
+        v.volta || ''
+      ]);
+    });
+    const wsVendas = XLSX.utils.aoa_to_sheet(vendasData);
+    XLSX.utils.book_append_sheet(wb, wsVendas, 'Vendas');
+
+    // Hoja 2: Gastos
+    const gastosData = [['Data', 'Hermano', 'Importe €', 'Concepto']];
+    const nombre = (h) => h === 'JA' ? 'Juan Antonio' : h;
+    gastos.forEach(g => {
+      gastosData.push([g.data, nombre(g.hermano), g.importe, g.concepto || '']);
+    });
+    const wsGastos = XLSX.utils.aoa_to_sheet(gastosData);
+    XLSX.utils.book_append_sheet(wb, wsGastos, 'Gastos');
+
+    // Hoja 3: Resumo por Hermano
+    const inicioAno = '2026-01-01';
+    const vendasDesdeInicio = vendas.filter(v => v.data >= inicioAno);
+    const gastosDesdeInicio = gastos.filter(g => g.data >= inicioAno);
+
+    let gananciasJA=0, gananciasJandro=0, gananciasJorge=0;
+    vendasDesdeInicio.forEach(v => {
+      gananciasJA += v.ganancia * (v.porcentaxeJA / 100);
+      gananciasJandro += v.ganancia * (v.porcentaxeJandro / 100);
+      gananciasJorge += v.ganancia * (v.porcentaxeJorge / 100);
+    });
+
+    let gastosJA=0, gastosJandro=0, gastosJorge=0;
+    gastosDesdeInicio.forEach(g => {
+      if (g.hermano === 'JA') gastosJA += g.importe;
+      if (g.hermano === 'Jandro') gastosJandro += g.importe;
+      if (g.hermano === 'Jorge') gastosJorge += g.importe;
+    });
+
+    const resumoData = [
+      ['Hermano', 'Ganancias €', 'Gastos €', 'Neto €'],
+      ['Juan Antonio', gananciasJA.toFixed(2), gastosJA.toFixed(2), (gananciasJA - gastosJA).toFixed(2)],
+      ['Jandro', gananciasJandro.toFixed(2), gastosJandro.toFixed(2), (gananciasJandro - gastosJandro).toFixed(2)],
+      ['Jorge', gananciasJorge.toFixed(2), gastosJorge.toFixed(2), (gananciasJorge - gastosJorge).toFixed(2)],
+      [],
+      ['TOTAL', (gananciasJA + gananciasJandro + gananciasJorge).toFixed(2), (gastosJA + gastosJandro + gastosJorge).toFixed(2), (gananciasJA + gananciasJandro + gananciasJorge - gastosJA - gastosJandro - gastosJorge).toFixed(2)]
+    ];
+    const wsResumo = XLSX.utils.aoa_to_sheet(resumoData);
+    XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+
+    XLSX.writeFile(wb, `amegrove-${new Date().toISOString().split('T')[0]}.xlsx`);
+  }
+
+  function actualizarEtiquetaCantidade() {
+    const tipo = document.getElementById('tipo').value;
+    const etiqueta = document.getElementById('etiquetaCantidade');
+    const etiquetaPrezo = document.getElementById('etiquetaPrezo');
+    const inputPrezo = document.getElementById('prezo');
+
+    if (tipo === 'BARCADA') {
+      etiqueta.textContent = 'Cantidade (kilos totais)';
+      etiquetaPrezo.textContent = 'Prezo €/kg (manual)';
+      inputPrezo.disabled = false;
+      inputPrezo.value = '';
+    } else {
+      etiqueta.textContent = 'Cantidade (sacos de 10kg)';
+      etiquetaPrezo.textContent = 'Prezo €/kg (automático)';
+      inputPrezo.disabled = true;
+      inputPrezo.value = precos[tipo] || 0;
+    }
+  }
+
+  document.getElementById('porcentaxeJA').addEventListener('input', actualizarTotalPorcentaxe);
+  document.getElementById('porcentaxeJandro').addEventListener('input', actualizarTotalPorcentaxe);
+  document.getElementById('porcentaxeJorge').addEventListener('input', actualizarTotalPorcentaxe);
+
+  function actualizarTotalPorcentaxe() {
+    const pJA = parseFloat(document.getElementById('porcentaxeJA').value) || 0;
+    const pJandro = parseFloat(document.getElementById('porcentaxeJandro').value) || 0;
+    const pJorge = parseFloat(document.getElementById('porcentaxeJorge').value) || 0;
+    const total = pJA + pJandro + pJorge;
+
+    const elementoTotal = document.getElementById('totalPorcentaxe');
+    const avisoPorcentaxe = document.getElementById('avisoPorcentaxe');
+
+    elementoTotal.textContent = total.toFixed(1);
+
+    if (Math.abs(total - 100) > 0.01) {
+      elementoTotal.style.color = '#dc3545';
+      avisoPorcentaxe.style.display = 'block';
+    } else {
+      elementoTotal.style.color = '#28a745';
+      avisoPorcentaxe.style.display = 'none';
+    }
+  }
+
+  function limpiarTodos() {
+    if (confirm('⚠️ Esto vai eliminar TODOS os datos (vendas e gastos). ¿Estás completamente seguro?')) {
+      vendas = [];
+      gastos = [];
+      guardarDatos();
+      actualizarFormulario();
+      mostrarAlerta('✅ Todos os datos eliminados');
+    }
+  }
+
+  function mostrarAlerta(mensaje, tipo='success') {
+    const alertDiv = document.getElementById('alert');
+    alertDiv.textContent = mensaje;
+    alertDiv.className = 'alert' + (tipo === 'error' ? ' error' : '');
+    alertDiv.style.display = 'block';
+    setTimeout(() => { alertDiv.style.display = 'none'; }, 3500);
+  }
+
+  // ====== EDICIÓN VENDAS ======
+  function actualizarEtiquetaCantidadeEditar() {
+    const tipo = document.getElementById('editTipo').value;
+    const etiqueta = document.getElementById('editEtiquetaCantidade');
+    const inputPrezo = document.getElementById('editPrezo');
+
+    if (tipo === 'BARCADA') {
+      etiqueta.textContent = 'Cantidade (kilos totais)';
+      inputPrezo.placeholder = 'Prezo €/kg (manual)';
+    } else {
+      etiqueta.textContent = 'Cantidade (sacos de 10kg)';
+      inputPrezo.placeholder = `Auto: ${(precos[tipo] ?? 0).toFixed(2)} €/kg (ou escribe outro)`;
+    }
+  }
+
+  function abrirEditar(id) {
+    const v = vendas.find(x => x.id === id);
+    if (!v) return;
+
+    document.getElementById('editId').value = v.id;
+    document.getElementById('editData').value = v.data;
+    document.getElementById('editBatea').value = v.batea;
+    document.getElementById('editTipo').value = v.tipo;
+
+    document.getElementById('editCantidade').value = v.esBaracada ? (v.cantidadeBarcada || 0) : (v.cantidade || 0);
+    document.getElementById('editPrezo').value = '';
+    document.getElementById('editVolta').value = v.volta || '';
+
+    document.getElementById('editPorcentaxeJA').value = v.porcentaxeJA;
+    document.getElementById('editPorcentaxeJandro').value = v.porcentaxeJandro;
+    document.getElementById('editPorcentaxeJorge').value = v.porcentaxeJorge;
+
+    actualizarEtiquetaCantidadeEditar();
+
+    document.getElementById('alertEditar').style.display = 'none';
+    document.getElementById('modalEditar').style.display = 'flex';
+  }
+
+  function pecharModalEditar() {
+    document.getElementById('modalEditar').style.display = 'none';
+  }
+
+  function gardarEdicion() {
+    const id = parseInt(document.getElementById('editId').value, 10);
+    const idx = vendas.findIndex(x => x.id === id);
+    if (idx === -1) return;
+
+    const data = document.getElementById('editData').value;
+    const batea = document.getElementById('editBatea').value;
+    const tipo = document.getElementById('editTipo').value;
+    const cantidade = parseFloat(document.getElementById('editCantidade').value);
+    const prezoManual = parseFloat(document.getElementById('editPrezo').value);
+    const volta = document.getElementById('editVolta').value;
+
+    const pJA = parseFloat(document.getElementById('editPorcentaxeJA').value) || 0;
+    const pJandro = parseFloat(document.getElementById('editPorcentaxeJandro').value) || 0;
+    const pJorge = parseFloat(document.getElementById('editPorcentaxeJorge').value) || 0;
+
+    const totalP = pJA + pJandro + pJorge;
+    if (Math.abs(totalP - 100) > 0.01) {
+      const a = document.getElementById('alertEditar');
+      a.textContent = 'Os porcentaxes deben sumar exactamente 100%';
+      a.style.display = 'block';
+      return;
     }
 
-    function restablecerPrezos2026() {
-        precos = { ...PREZOS_2026 };
-        localStorage.setItem('precos_amegrove', JSON.stringify(precos));
-        localStorage.setItem(PREZOS_VERSION_KEY, PREZOS_VERSION);
-        actualizarFormulario();
-        actualizarEtiquetaCantidade();
-        mostrarAlerta('✅ Prezos 2026 restablecidos');
+    const esBaracada = tipo === 'BARCADA';
+    const quilos = esBaracada ? cantidade : (cantidade * 10);
+
+    let prezo;
+    if (esBaracada) {
+      if (Number.isNaN(prezoManual)) {
+        const a = document.getElementById('alertEditar');
+        a.textContent = 'En BARCADA tes que poñer o prezo €/kg manualmente';
+        a.style.display = 'block';
+        return;
+      }
+      prezo = prezoManual;
+    } else {
+      prezo = Number.isNaN(prezoManual) ? (precos[tipo] ?? 0) : prezoManual;
     }
 
-    function cargarDatos() {
-        const datosGuardados = localStorage.getItem('vendas_amegrove');
-        const gastosGuardados = localStorage.getItem('gastos_amegrove');
-        const precosGuardados = localStorage.getItem('precos_amegrove');
-        const versionGuardada = localStorage.getItem(PREZOS_VERSION_KEY);
+    const venda = vendas[idx];
+    venda.data = data;
+    venda.batea = batea;
+    venda.tipo = tipo;
+    venda.volta = volta;
 
-        if (datosGuardados) vendas = JSON.parse(datosGuardados);
-        if (gastosGuardados) gastos = JSON.parse(gastosGuardados);
+    venda.esBaracada = esBaracada;
+    venda.cantidade = esBaracada ? 0 : cantidade;
+    venda.cantidadeBarcada = esBaracada ? cantidade : null;
 
-        if (precosGuardados && versionGuardada === PREZOS_VERSION) {
-            precos = JSON.parse(precosGuardados);
-        } else {
-            precos = { ...PREZOS_2026 };
-            localStorage.setItem('precos_amegrove', JSON.stringify(precos));
-            localStorage.setItem(PREZOS_VERSION_KEY, PREZOS_VERSION);
-        }
+    venda.quilos = quilos;
+    venda.prezo = prezo;
+    venda.ganancia = quilos * prezo;
 
-        const inputFiltro = document.getElementById('filtroData');
-        if (inputFiltro) {
-            inputFiltro.value = filtroData;
-            inputFiltro.addEventListener('change', (e) => {
-                filtroData = e.target.value;
-                verTodasAsVendas = false;
-                actualizarListado();
-                actualizarReparticion();
+    venda.porcentaxeJA = pJA;
+    venda.porcentaxeJandro = pJandro;
+    venda.porcentaxeJorge = pJorge;
+
+    guardarDatos();
+    pecharModalEditar();
+    actualizarFormulario();
+    mostrarAlerta('✅ Venda actualizada correctamente!');
+  }
+
+  document.getElementById('modalEditar').addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'modalEditar') pecharModalEditar();
+  });
+
+  // ====== EDICIÓN GASTOS ======
+  function abrirEditarGasto(id) {
+    const g = gastos.find(x => x.id === id);
+    if (!g) return;
+
+    document.getElementById('editGastoId').value = g.id;
+    document.getElementById('editGastoData').value = g.data;
+    document.getElementById('editGastoHermano').value = g.hermano;
+    document.getElementById('editGastoImporte').value = g.importe;
+    document.getElementById('editGastoConcepto').value = g.concepto || '';
+
+    document.getElementById('alertEditarGasto').style.display = 'none';
+    document.getElementById('modalEditarGasto').style.display = 'flex';
+  }
+
+  function pecharModalEditarGasto() {
+    document.getElementById('modalEditarGasto').style.display = 'none';
+  }
+
+  function gardarEdicionGasto() {
+    const id = parseInt(document.getElementById('editGastoId').value, 10);
+    const idx = gastos.findIndex(x => x.id === id);
+    if (idx === -1) return;
+
+    const data = document.getElementById('editGastoData').value;
+    const hermano = document.getElementById('editGastoHermano').value;
+    const importe = parseFloat(document.getElementById('editGastoImporte').value);
+    const concepto = document.getElementById('editGastoConcepto').value || '';
+
+    if (!data || !hermano || Number.isNaN(importe) || importe <= 0) {
+      const a = document.getElementById('alertEditarGasto');
+      a.textContent = 'Introduce unha data e un importe válido (> 0).';
+      a.style.display = 'block';
+      return;
+    }
+
+    const g = gastos[idx];
+    g.data = data;
+    g.hermano = hermano;
+    g.importe = importe;
+    g.concepto = concepto;
+
+    guardarDatos();
+    pecharModalEditarGasto();
+    actualizarFormulario();
+    mostrarAlertaGastos('✅ Gasto actualizado correctamente!');
+  }
+
+  document.getElementById('modalEditarGasto').addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'modalEditarGasto') pecharModalEditarGasto();
+  });
+
+  // ====== COPIA JSON (EXPORT / IMPORT) ======
+  function exportarCopiaJSON() {
+    const backup = {
+      schema: 1,
+      createdAt: new Date().toISOString(),
+      origin: location.origin,
+      vendas: Array.isArray(vendas) ? vendas : [],
+      gastos: Array.isArray(gastos) ? gastos : [],
+      precos: precos || {},
+      precos_version: localStorage.getItem(PREZOS_VERSION_KEY) || PREZOS_VERSION
+    };
+
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `chapelo-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function abrirImportJSON() {
+    const input = document.getElementById("importJsonFile");
+    if (!input) return;
+    input.value = "";
+    input.click();
+  }
+
+  (function activarImportJSON() {
+    const input = document.getElementById("importJsonFile");
+    if (!input) return;
+
+    input.addEventListener("change", (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(String(reader.result || ""));
+          if (!data || typeof data !== "object") throw new Error("JSON inválido");
+
+          const nuevasVendas = Array.isArray(data.vendas) ? data.vendas : [];
+          const nuevosGastos = Array.isArray(data.gastos) ? data.gastos : [];
+          const nuevosPrecos = (data.precos && typeof data.precos === "object") ? data.precos : null;
+
+          const reemplazar = confirm(
+            "¿Importar copia?\n\nOK = REEMPLAZAR todos los datos actuales\nCancelar = MEZCLAR (mantener y añadir lo que falte)"
+          );
+
+          if (reemplazar) {
+            vendas = nuevasVendas;
+            gastos = nuevosGastos;
+            if (nuevosPrecos) precos = nuevosPrecos;
+          } else {
+            const idsV = new Set((vendas || []).map(v => v && v.id).filter(Boolean));
+            nuevasVendas.forEach(v => {
+              if (!v || !v.id) v.id = Date.now() + Math.floor(Math.random() * 100000);
+              if (!idsV.has(v.id)) { vendas.push(v); idsV.add(v.id); }
             });
-        }
 
-        const inputFiltroG = document.getElementById('filtroDataGastos');
-        if (inputFiltroG) {
-            inputFiltroG.value = filtroDataGastos;
-            inputFiltroG.addEventListener('change', (e) => {
-                filtroDataGastos = e.target.value;
-                verTodosOsGastos = false;
-                actualizarListadoGastos();
+            const idsG = new Set((gastos || []).map(g => g && g.id).filter(Boolean));
+            nuevosGastos.forEach(g => {
+              if (!g || !g.id) g.id = Date.now() + Math.floor(Math.random() * 100000);
+              if (!idsG.has(g.id)) { gastos.push(g); idsG.add(g.id); }
             });
+
+            if (nuevosPrecos) precos = nuevosPrecos;
+          }
+
+          guardarDatos();
+          actualizarFormulario();
+          alert("✅ Importación completada");
+        } catch (err) {
+          alert("❌ No se pudo importar el JSON. Asegúrate de que es una copia exportada desde esta app.");
         }
+      };
 
-        actualizarEtiquetaCantidade();
-        actualizarTotalPorcentaxe();
-        actualizarFormulario();
-        verHoxe();
-        verGastosHoxe();
-    }
-
-    function guardarDatos() {
-        localStorage.setItem('vendas_amegrove', JSON.stringify(vendas));
-        localStorage.setItem('gastos_amegrove', JSON.stringify(gastos));
-        localStorage.setItem('precos_amegrove', JSON.stringify(precos));
-        localStorage.setItem(PREZOS_VERSION_KEY, PREZOS_VERSION);
-    }
-function diagnosticoURL() {
-  const keys = Object.keys(localStorage);
-  alert(
-    `standalone=${window.navigator.standalone}\n` +
-    `href=${location.href}\n` +
-    `origin=${location.origin}\n` +
-    `localStorage keys: ${keys.join(', ') || '(ninguna)'}`
-  );
-}
-
-    // ===== VENDAS =====
-    document.getElementById('entradaForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const data = document.getElementById('data').value;
-        const batea = document.getElementById('batea').value;
-        const tipo = document.getElementById('tipo').value;
-        const cantidade = parseInt(document.getElementById('cantidade').value, 10);
-        const prezo = parseFloat(document.getElementById('prezo').value);
-        const volta = document.getElementById('volta').value;
-        const porcentaxeJA = parseFloat(document.getElementById('porcentaxeJA').value);
-        const porcentaxeJandro = parseFloat(document.getElementById('porcentaxeJandro').value);
-        const porcentaxeJorge = parseFloat(document.getElementById('porcentaxeJorge').value);
-
-        if (!data || !batea || !tipo || !cantidade || Number.isNaN(prezo)) {
-            mostrarAlerta('Por favor completa todos os campos obrigatorios', 'error');
-            return;
-        }
-
-        const totalPorcentaxe = (porcentaxeJA || 0) + (porcentaxeJandro || 0) + (porcentaxeJorge || 0);
-        if (Math.abs(totalPorcentaxe - 100) > 0.01) {
-            mostrarAlerta('Os porcentaxes deben sumar exactamente 100%', 'error');
-            return;
-        }
-
-        const esBaracada = tipo === 'BARCADA';
-        const quilos = esBaracada ? cantidade : cantidade * 10;
-        const prezoAutomatico = esBaracada ? prezo : precos[tipo];
-
-        const venda = {
-            id: Date.now(),
-            data,
-            batea,
-            tipo,
-            cantidade: esBaracada ? 0 : cantidade,
-            quilos,
-            prezo: prezoAutomatico,
-            ganancia: quilos * prezoAutomatico,
-            volta,
-            esBaracada,
-            cantidadeBarcada: esBaracada ? cantidade : null,
-            porcentaxeJA,
-            porcentaxeJandro,
-            porcentaxeJorge
-        };
-
-        vendas.push(venda);
-        guardarDatos();
-
-        this.reset();
-        document.getElementById('data').valueAsDate = new Date();
-        actualizarEtiquetaCantidade();
-        actualizarTotalPorcentaxe();
-
-        verHoxe();
-        actualizarFormulario();
-        mostrarAlerta('✅ Venda engadida correctamente!');
+      reader.readAsText(file);
     });
-
-    // ===== GASTOS =====
-    document.getElementById('gastoForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const data = document.getElementById('gastoData').value;
-        const hermano = document.getElementById('gastoHermano').value;
-        const importe = parseFloat(document.getElementById('gastoImporte').value);
-        const concepto = document.getElementById('gastoConcepto').value || '';
-
-        if (!data || !hermano || Number.isNaN(importe) || importe <= 0) {
-            mostrarAlertaGastos('Introduce unha data e un importe válido (> 0).', 'error');
-            return;
-        }
-
-        const gasto = { id: Date.now(), data, hermano, importe, concepto };
-        gastos.push(gasto);
-        guardarDatos();
-
-        this.reset();
-        document.getElementById('gastoData').valueAsDate = new Date();
-
-        verGastosHoxe();
-        actualizarFormulario();
-        mostrarAlertaGastos('✅ Gasto engadido correctamente!');
-    });
-
-    function mostrarAlertaGastos(mensaje, tipo = 'success') {
-        const alertDiv = document.getElementById('alertGastos');
-        alertDiv.textContent = mensaje;
-        alertDiv.className = 'alert' + (tipo === 'error' ? ' error' : '');
-        alertDiv.style.display = 'block';
-        setTimeout(() => { alertDiv.style.display = 'none'; }, 3000);
-    }
-
-    function actualizarFormulario() {
-        actualizarListado();
-        actualizarListadoGastos();
-        actualizarEstadisticas();
-        actualizarReparticion();
-        actualizarResumen();
-    }
-
-    function actualizarListado() {
-        const tbody = document.getElementById('listadoVendas');
-        const lista = verTodasAsVendas ? vendas : vendas.filter(v => v.data === filtroData);
-
-        if (lista.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="12" style="text-align: center; color: #999;">
-                Sen datos ${verTodasAsVendas ? '' : 'para ' + filtroData}
-            </td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = lista
-            .slice()
-            .sort((a, b) => (a.data === b.data ? (b.id - a.id) : (a.data > b.data ? -1 : 1)))
-            .map(v => `
-            <tr>
-                <td>${v.data}</td>
-                <td><strong>${v.batea}</strong></td>
-                <td>${v.tipo}</td>
-                <td>${v.esBaracada ? (v.cantidadeBarcada + ' kg') : (v.cantidade + ' sacos')}</td>
-                <td>${v.quilos} kg</td>
-                <td>${v.prezo.toFixed(2)}€</td>
-                <td><strong>${v.ganancia.toFixed(2)}€</strong></td>
-                <td>${v.porcentaxeJA}%</td>
-                <td>${v.porcentaxeJandro}%</td>
-                <td>${v.porcentaxeJorge}%</td>
-                <td>${v.volta || '-'}</td>
-                <td style="white-space:nowrap;">
-                    <button type="button"
-                            style="background:#0d6efd; color:#fff; border:none; padding:6px 10px; border-radius:3px; cursor:pointer; font-size:0.85em; margin-right:8px;"
-                            onclick="abrirEditar(${v.id})">Editar</button>
-                    <button class="delete-btn" onclick="eliminarVenda(${v.id})">Borrar</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function actualizarListadoGastos() {
-        const tbody = document.getElementById('listadoGastos');
-        const lista = verTodosOsGastos ? gastos : gastos.filter(g => g.data === filtroDataGastos);
-
-        if (lista.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #999;">
-                Sen datos ${verTodosOsGastos ? '' : 'para ' + filtroDataGastos}
-            </td></tr>`;
-            return;
-        }
-
-        const nombre = (h) => h === 'JA' ? 'Juan Antonio' : h;
-
-        tbody.innerHTML = lista
-            .slice()
-            .sort((a, b) => (a.data === b.data ? (b.id - a.id) : (a.data > b.data ? -1 : 1)))
-            .map(g => `
-            <tr>
-                <td>${g.data}</td>
-                <td><strong>${nombre(g.hermano)}</strong></td>
-                <td>${g.importe.toFixed(2)}€</td>
-                <td>${(g.concepto || '-')}</td>
-                <td style="white-space:nowrap;">
-                    <button type="button"
-                            style="background:#0d6efd; color:#fff; border:none; padding:6px 10px; border-radius:3px; cursor:pointer; font-size:0.85em; margin-right:8px;"
-                            onclick="abrirEditarGasto(${g.id})">Editar</button>
-                    <button class="delete-btn" onclick="eliminarGasto(${g.id})">Borrar</button>
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function actualizarEstadisticas() {
-        const inicioAno = '2026-01-01';
-        const vendasDesdeInicio = vendas.filter(v => v.data >= inicioAno);
-        const gastosDesdeInicio = gastos.filter(g => g.data >= inicioAno);
-
-        // Ganancias brutas por hermano
-        let gananciasJA = 0, gananciasJandro = 0, gananciasJorge = 0;
-        vendasDesdeInicio.forEach(v => {
-            gananciasJA += v.ganancia * (v.porcentaxeJA / 100);
-            gananciasJandro += v.ganancia * (v.porcentaxeJandro / 100);
-            gananciasJorge += v.ganancia * (v.porcentaxeJorge / 100);
-        });
-
-        // Gastos por hermano
-        let gastosJA = 0, gastosJandro = 0, gastosJorge = 0;
-        gastosDesdeInicio.forEach(g => {
-            if (g.hermano === 'JA') gastosJA += g.importe;
-            if (g.hermano === 'Jandro') gastosJandro += g.importe;
-            if (g.hermano === 'Jorge') gastosJorge += g.importe;
-        });
-
-        const netoJA = gananciasJA - gastosJA;
-        const netoJandro = gananciasJandro - gastosJandro;
-        const netoJorge = gananciasJorge - gastosJorge;
-
-        const totalGanancias = gananciasJA + gananciasJandro + gananciasJorge;
-        const totalGastos = gastosJA + gastosJandro + gastosJorge;
-        const totalNeto = netoJA + netoJandro + netoJorge;
-
-        const pNetoJA = totalNeto !== 0 ? (netoJA / totalNeto * 100) : 0;
-        const pNetoJandro = totalNeto !== 0 ? (netoJandro / totalNeto * 100) : 0;
-        const pNetoJorge = totalNeto !== 0 ? (netoJorge / totalNeto * 100) : 0;
-
-        document.getElementById('gananciasJA').textContent = gananciasJA.toFixed(2) + '€';
-        document.getElementById('gananciasJandro').textContent = gananciasJandro.toFixed(2) + '€';
-        document.getElementById('gananciasJorge').textContent = gananciasJorge.toFixed(2) + '€';
-        document.getElementById('totalGanancias').textContent = totalGanancias.toFixed(2) + '€';
-
-        document.getElementById('gastosJA').textContent = gastosJA.toFixed(2) + '€';
-        document.getElementById('gastosJandro').textContent = gastosJandro.toFixed(2) + '€';
-        document.getElementById('gastosJorge').textContent = gastosJorge.toFixed(2) + '€';
-        document.getElementById('totalGastos').textContent = totalGastos.toFixed(2) + '€';
-
-        document.getElementById('netoJA').textContent = netoJA.toFixed(2) + '€';
-        document.getElementById('netoJandro').textContent = netoJandro.toFixed(2) + '€';
-        document.getElementById('netoJorge').textContent = netoJorge.toFixed(2) + '€';
-        document.getElementById('totalNeto').textContent = totalNeto.toFixed(2) + '€';
-
-        document.getElementById('porcentaxeNetoJA').textContent = pNetoJA.toFixed(1);
-        document.getElementById('porcentaxeNetoJandro').textContent = pNetoJandro.toFixed(1);
-        document.getElementById('porcentaxeNetoJorge').textContent = pNetoJorge.toFixed(1);
-    }
-
-    function actualizarReparticion() {
-        const lista = verTodasAsVendas ? vendas : vendas.filter(v => v.data === filtroData);
-
-        const reparticion = {};
-        lista.forEach(v => {
-            if (!reparticion[v.batea]) reparticion[v.batea] = { sacos: 0, quilos: 0, ganancia: 0 };
-            if (!v.esBaracada) reparticion[v.batea].sacos += v.cantidade;
-            reparticion[v.batea].quilos += v.quilos;
-            reparticion[v.batea].ganancia += v.ganancia;
-        });
-
-        const html = Object.entries(reparticion).map(([batea, datos]) => `
-            <div class="summary-row">
-                <span><strong>${batea}</strong></span>
-                <span>${datos.sacos} sacos | ${datos.quilos} kg | <strong>${datos.ganancia.toFixed(2)}€</strong></span>
-            </div>
-        `).join('');
-
-        document.getElementById('reparticionBatea').innerHTML = html || '<p style="color: #999;">Sen datos</p>';
-    }
-
-    function actualizarResumen() {
-        const resumenPorMes = {};
-        vendas.forEach(v => {
-            const mes = v.data.substring(0, 7);
-            if (!resumenPorMes[mes]) resumenPorMes[mes] = { sacos: 0, quilos: 0, ganancia: 0, registros: 0 };
-            if (!v.esBaracada) resumenPorMes[mes].sacos += v.cantidade;
-            resumenPorMes[mes].quilos += v.quilos;
-            resumenPorMes[mes].ganancia += v.ganancia;
-            resumenPorMes[mes].registros++;
-        });
-
-        const html = Object.entries(resumenPorMes).sort().reverse().map(([mes, datos]) => `
-            <div class="month-summary">
-                <h3>${new Date(mes + '-01').toLocaleDateString('gl-ES', {month: 'long', year: 'numeric'})}</h3>
-                <div class="summary-row"><span>Rexistros:</span><strong>${datos.registros}</strong></div>
-                <div class="summary-row"><span>Total de Sacos:</span><strong>${datos.sacos}</strong></div>
-                <div class="summary-row"><span>Total de Quilos:</span><strong>${datos.quilos}</strong></div>
-                <div class="summary-row"><span>Total de Ganancias:</span><strong style="color: #28a745;">${datos.ganancia.toFixed(2)}€</strong></div>
-            </div>
-        `).join('');
-
-        document.getElementById('resumoMensual').innerHTML = html || '<p style="color: #999;">Sen datos</p>';
-    }
-
-    function eliminarVenda(id) {
-        if (confirm('¿Estás seguro de que queres borrar esta venda?')) {
-            vendas = vendas.filter(v => v.id !== id);
-            guardarDatos();
-            actualizarFormulario();
-            mostrarAlerta('✅ Venda eliminada');
-        }
-    }
-
-    function eliminarGasto(id) {
-        if (confirm('¿Estás seguro de que queres borrar este gasto?')) {
-            gastos = gastos.filter(g => g.id !== id);
-            guardarDatos();
-            actualizarFormulario();
-            mostrarAlertaGastos('✅ Gasto eliminado');
-        }
-    }
-
-    function mostrarTab(tab, ev) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(tab).classList.add('active');
-        if (ev && ev.target) ev.target.classList.add('active');
-    }
-
-    function guardarPrecios() {
-        precos = {
-            'EXTRA_F': parseFloat(document.getElementById('precioEXTRA_F').value),
-            'EXTRA_R': parseFloat(document.getElementById('precioEXTRA_R').value),
-            'GRANDE1_F': parseFloat(document.getElementById('precioGRANDE1_F').value),
-            'GRANDE1_R': parseFloat(document.getElementById('precioGRANDE1_R').value),
-            'GRANDE2_F': parseFloat(document.getElementById('precioGRANDE2_F').value),
-            'GRANDE2_R': parseFloat(document.getElementById('precioGRANDE2_R').value),
-            'NORMAL_F': parseFloat(document.getElementById('precioNORMAL_F').value),
-            'NORMAL_R': parseFloat(document.getElementById('precioNORMAL_R').value),
-            'EUROPEO_F': parseFloat(document.getElementById('precioEUROPEO_F').value),
-            'EUROPEO_R': parseFloat(document.getElementById('precioEUROPEO_R').value),
-            'LACAS_F': parseFloat(document.getElementById('precioLACAS_F').value),
-            'LACAS_R': parseFloat(document.getElementById('precioLACAS_R').value),
-            'BARCADA': 0
-        };
-        guardarDatos();
-        mostrarAlerta('✅ Precos gardados correctamente');
-        actualizarEtiquetaCantidade();
-    }
-
-    function exportarDatos() {
-        if (vendas.length === 0) {
-            mostrarAlerta('Non hai datos para exportar', 'error');
-            return;
-        }
-
-        let csv = 'Data,Batea,Tipo,Sacos,Quilos,Prezo €/kg,Ganancia €,PorcJA,PorcJandro,PorcJorge,Volta\n';
-        vendas.forEach(v => {
-            csv += `${v.data},${v.batea},${v.tipo},${v.cantidade},${v.quilos},${v.prezo},${v.ganancia},${v.porcentaxeJA},${v.porcentaxeJandro},${v.porcentaxeJorge},${(v.volta || '')}\n`;
-        });
-
-        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `amegrove-vendas-${new Date().toISOString().split('T')[0]}.csv`);
-        link.click();
-    }
-
-    function actualizarEtiquetaCantidade() {
-        const tipo = document.getElementById('tipo').value;
-        const etiqueta = document.getElementById('etiquetaCantidade');
-        const etiquetaPrezo = document.getElementById('etiquetaPrezo');
-        const inputPrezo = document.getElementById('prezo');
-
-        if (tipo === 'BARCADA') {
-            etiqueta.textContent = 'Cantidade (kilos totais)';
-            etiquetaPrezo.textContent = 'Prezo €/kg (manual)';
-            inputPrezo.disabled = false;
-            inputPrezo.value = '';
-        } else {
-            etiqueta.textContent = 'Cantidade (sacos de 10kg)';
-            etiquetaPrezo.textContent = 'Prezo €/kg (automático)';
-            inputPrezo.disabled = true;
-            inputPrezo.value = precos[tipo] || 0;
-        }
-    }
-
-    document.getElementById('porcentaxeJA').addEventListener('input', actualizarTotalPorcentaxe);
-    document.getElementById('porcentaxeJandro').addEventListener('input', actualizarTotalPorcentaxe);
-    document.getElementById('porcentaxeJorge').addEventListener('input', actualizarTotalPorcentaxe);
-
-    function actualizarTotalPorcentaxe() {
-        const pJA = parseFloat(document.getElementById('porcentaxeJA').value) || 0;
-        const pJandro = parseFloat(document.getElementById('porcentaxeJandro').value) || 0;
-        const pJorge = parseFloat(document.getElementById('porcentaxeJorge').value) || 0;
-        const total = pJA + pJandro + pJorge;
-
-        const elementoTotal = document.getElementById('totalPorcentaxe');
-        const avisoPorcentaxe = document.getElementById('avisoPorcentaxe');
-
-        elementoTotal.textContent = total.toFixed(1);
-
-        if (Math.abs(total - 100) > 0.01) {
-            elementoTotal.style.color = '#dc3545';
-            avisoPorcentaxe.style.display = 'block';
-        } else {
-            elementoTotal.style.color = '#28a745';
-            avisoPorcentaxe.style.display = 'none';
-        }
-    }
-
-    function limpiarTodos() {
-        if (confirm('⚠️ Esto vai eliminar TODOS os datos (vendas e gastos). ¿Estás completamente seguro?')) {
-            vendas = [];
-            gastos = [];
-            guardarDatos();
-            actualizarFormulario();
-            mostrarAlerta('✅ Todos os datos eliminados');
-        }
-    }
-
-    function mostrarAlerta(mensaje, tipo = 'success') {
-        const alertDiv = document.getElementById('alert');
-        alertDiv.textContent = mensaje;
-        alertDiv.className = 'alert' + (tipo === 'error' ? ' error' : '');
-        alertDiv.style.display = 'block';
-        setTimeout(() => { alertDiv.style.display = 'none'; }, 3000);
-    }
-
-    // ====== EDICIÓN VENDAS (modal) ======
-    function actualizarEtiquetaCantidadeEditar() {
-        const tipo = document.getElementById('editTipo').value;
-        const etiqueta = document.getElementById('editEtiquetaCantidade');
-        const inputPrezo = document.getElementById('editPrezo');
-
-        if (tipo === 'BARCADA') {
-            etiqueta.textContent = 'Cantidade (kilos totais)';
-            inputPrezo.placeholder = 'Prezo €/kg (manual)';
-        } else {
-            etiqueta.textContent = 'Cantidade (sacos de 10kg)';
-            inputPrezo.placeholder = `Auto: ${(precos[tipo] ?? 0).toFixed(2)} €/kg (ou escribe outro)`;
-        }
-    }
-
-    function abrirEditar(id) {
-        const v = vendas.find(x => x.id === id);
-        if (!v) return;
-
-        document.getElementById('editId').value = v.id;
-        document.getElementById('editData').value = v.data;
-        document.getElementById('editBatea').value = v.batea;
-        document.getElementById('editTipo').value = v.tipo;
-
-        document.getElementById('editCantidade').value = v.esBaracada ? (v.cantidadeBarcada || 0) : (v.cantidade || 0);
-        document.getElementById('editPrezo').value = '';
-        document.getElementById('editVolta').value = v.volta || '';
-
-        document.getElementById('editPorcentaxeJA').value = v.porcentaxeJA;
-        document.getElementById('editPorcentaxeJandro').value = v.porcentaxeJandro;
-        document.getElementById('editPorcentaxeJorge').value = v.porcentaxeJorge;
-
-        actualizarEtiquetaCantidadeEditar();
-
-        document.getElementById('alertEditar').style.display = 'none';
-        document.getElementById('modalEditar').style.display = 'flex';
-    }
-
-    function pecharModalEditar() {
-        document.getElementById('modalEditar').style.display = 'none';
-    }
-
-    function gardarEdicion() {
-        const id = parseInt(document.getElementById('editId').value, 10);
-        const idx = vendas.findIndex(x => x.id === id);
-        if (idx === -1) return;
-
-        const data = document.getElementById('editData').value;
-        const batea = document.getElementById('editBatea').value;
-        const tipo = document.getElementById('editTipo').value;
-
-        const cantidade = parseFloat(document.getElementById('editCantidade').value);
-        const prezoManual = parseFloat(document.getElementById('editPrezo').value);
-
-        const volta = document.getElementById('editVolta').value;
-
-        const pJA = parseFloat(document.getElementById('editPorcentaxeJA').value) || 0;
-        const pJandro = parseFloat(document.getElementById('editPorcentaxeJandro').value) || 0;
-        const pJorge = parseFloat(document.getElementById('editPorcentaxeJorge').value) || 0;
-
-        const totalP = pJA + pJandro + pJorge;
-        if (Math.abs(totalP - 100) > 0.01) {
-            const a = document.getElementById('alertEditar');
-            a.textContent = 'Os porcentaxes deben sumar exactamente 100%';
-            a.style.display = 'block';
-            return;
-        }
-
-        const esBaracada = tipo === 'BARCADA';
-        const quilos = esBaracada ? cantidade : (cantidade * 10);
-
-        let prezo;
-        if (esBaracada) {
-            if (Number.isNaN(prezoManual)) {
-                const a = document.getElementById('alertEditar');
-                a.textContent = 'En BARCADA tes que poñer o prezo €/kg manualmente';
-                a.style.display = 'block';
-                return;
-            }
-            prezo = prezoManual;
-        } else {
-            prezo = Number.isNaN(prezoManual) ? (precos[tipo] ?? 0) : prezoManual;
-        }
-
-        const venda = vendas[idx];
-        venda.data = data;
-        venda.batea = batea;
-        venda.tipo = tipo;
-        venda.volta = volta;
-
-        venda.esBaracada = esBaracada;
-        venda.cantidade = esBaracada ? 0 : cantidade;
-        venda.cantidadeBarcada = esBaracada ? cantidade : null;
-
-        venda.quilos = quilos;
-        venda.prezo = prezo;
-        venda.ganancia = quilos * prezo;
-
-        venda.porcentaxeJA = pJA;
-        venda.porcentaxeJandro = pJandro;
-        venda.porcentaxeJorge = pJorge;
-
-        guardarDatos();
-        pecharModalEditar();
-        actualizarFormulario();
-        mostrarAlerta('✅ Venda actualizada correctamente!');
-    }
-
-    document.getElementById('modalEditar').addEventListener('click', (e) => {
-        if (e.target && e.target.id === 'modalEditar') pecharModalEditar();
-    });
-
-    // ====== EDICIÓN GASTOS (modal) ======
-    function abrirEditarGasto(id) {
-        const g = gastos.find(x => x.id === id);
-        if (!g) return;
-
-        document.getElementById('editGastoId').value = g.id;
-        document.getElementById('editGastoData').value = g.data;
-        document.getElementById('editGastoHermano').value = g.hermano;
-        document.getElementById('editGastoImporte').value = g.importe;
-        document.getElementById('editGastoConcepto').value = g.concepto || '';
-
-        document.getElementById('alertEditarGasto').style.display = 'none';
-        document.getElementById('modalEditarGasto').style.display = 'flex';
-    }
-
-    function pecharModalEditarGasto() {
-        document.getElementById('modalEditarGasto').style.display = 'none';
-    }
-
-    function gardarEdicionGasto() {
-        const id = parseInt(document.getElementById('editGastoId').value, 10);
-        const idx = gastos.findIndex(x => x.id === id);
-        if (idx === -1) return;
-
-        const data = document.getElementById('editGastoData').value;
-        const hermano = document.getElementById('editGastoHermano').value;
-        const importe = parseFloat(document.getElementById('editGastoImporte').value);
-        const concepto = document.getElementById('editGastoConcepto').value || '';
-
-        if (!data || !hermano || Number.isNaN(importe) || importe <= 0) {
-            const a = document.getElementById('alertEditarGasto');
-            a.textContent = 'Introduce unha data e un importe válido (> 0).';
-            a.style.display = 'block';
-            return;
-        }
-
-        const g = gastos[idx];
-        g.data = data;
-        g.hermano = hermano;
-        g.importe = importe;
-        g.concepto = concepto;
-
-        guardarDatos();
-        pecharModalEditarGasto();
-        actualizarFormulario();
-        mostrarAlertaGastos('✅ Gasto actualizado correctamente!');
-    }
-
-    document.getElementById('modalEditarGasto').addEventListener('click', (e) => {
-        if (e.target && e.target.id === 'modalEditarGasto') pecharModalEditarGasto();
-    });
-
-    window.addEventListener('load', cargarDatos);
+  })();
+
+  // ====== DIAGNÓSTICO (sin consola) ======
+  function diagnosticoURL() {
+    const keys = Object.keys(localStorage);
+    alert(
+      `standalone=${window.navigator.standalone}\n` +
+      `href=${location.href}\n` +
+      `origin=${location.origin}\n` +
+      `localStorage keys: ${keys.join(', ') || '(ninguna)'}`
+    );
+  }
+
+  window.addEventListener('load', cargarDatos);
 </script>
 </body>
 </html>
