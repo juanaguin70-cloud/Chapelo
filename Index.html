@@ -570,6 +570,16 @@
                 <div class="form-group" style="margin-top: 20px;">
                     <label>Opcións de Datos</label>
                     <button type="button" class="export-btn" onclick="exportarDatos()">📥 Descargar Datos (CSV)</button>
+                    <button type="button" style="background:#0d6efd; margin-top: 10px;" onclick="exportarCopiaJSON()">
+  🧾 Exportar copia (JSON)
+</button>
+
+<button type="button" style="background:#6f42c1; margin-top: 10px;" onclick="abrirImportJSON()">
+  📤 Importar copia (JSON)
+</button>
+
+<input id="importJsonFile" type="file" accept="application/json" style="display:none;">
+
                     <button type="button" style="background: #fd7e14; margin-top: 10px;" onclick="limpiarTodos()">🗑️ Limpar Todos os Datos</button>
                 </div>
             </div>
@@ -699,6 +709,94 @@
         </div>
     </div>
 </div>
+// ====== COPIA SEGURIDAD JSON (EXPORT / IMPORT) ======
+function exportarCopiaJSON() {
+  const backup = {
+    schema: 1,
+    createdAt: new Date().toISOString(),
+    origin: location.origin,
+    vendas: Array.isArray(vendas) ? vendas : [],
+    gastos: Array.isArray(gastos) ? gastos : [],
+    precos: precos || {},
+    precos_version: localStorage.getItem(PREZOS_VERSION_KEY) || PREZOS_VERSION
+  };
+
+  const json = JSON.stringify(backup, null, 2); // JSON legible [web:394]
+  const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob); // [web:396]
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `chapelo-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  // Limpieza del object URL
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function abrirImportJSON() {
+  const input = document.getElementById("importJsonFile");
+  input.value = "";
+  input.click();
+}
+
+document.getElementById("importJsonFile").addEventListener("change", (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(String(reader.result || ""));
+      if (!data || typeof data !== "object") throw new Error("JSON inválido");
+
+      const nuevasVendas = Array.isArray(data.vendas) ? data.vendas : [];
+      const nuevosGastos = Array.isArray(data.gastos) ? data.gastos : [];
+      const nuevosPrecos = (data.precos && typeof data.precos === "object") ? data.precos : null;
+
+      const reemplazar = confirm(
+        "¿Importar copia?\n\nOK = REEMPLAZAR todos los datos actuales\nCancelar = MEZCLAR (mantener y añadir lo que falte)"
+      );
+
+      if (reemplazar) {
+        vendas = nuevasVendas;
+        gastos = nuevosGastos;
+        if (nuevosPrecos) precos = nuevosPrecos;
+      } else {
+        // Mezcla por id para evitar duplicados
+        const idsV = new Set((vendas || []).map(v => v && v.id).filter(Boolean));
+        nuevasVendas.forEach(v => {
+          if (!v || !v.id) { v.id = Date.now() + Math.floor(Math.random() * 100000); }
+          if (!idsV.has(v.id)) {
+            vendas.push(v);
+            idsV.add(v.id);
+          }
+        });
+
+        const idsG = new Set((gastos || []).map(g => g && g.id).filter(Boolean));
+        nuevosGastos.forEach(g => {
+          if (!g || !g.id) { g.id = Date.now() + Math.floor(Math.random() * 100000); }
+          if (!idsG.has(g.id)) {
+            gastos.push(g);
+            idsG.add(g.id);
+          }
+        });
+
+        if (nuevosPrecos) precos = nuevosPrecos;
+      }
+
+      guardarDatos();       // guarda en localStorage con JSON.stringify [web:291]
+      actualizarFormulario();
+      alert("✅ Importación completada");
+    } catch (err) {
+      alert("❌ No se pudo importar el archivo JSON. Asegúrate de que es una copia de la app.");
+    }
+  };
+
+  reader.readAsText(file); // [web:383]
+});
 
 <script>
     // === PREZOS 2026 ===
