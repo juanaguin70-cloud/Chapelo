@@ -565,6 +565,8 @@
                     </div>
                 </div>
 
+                <button type="button" style="background:#0d6efd;" onclick="diagnosticoURL()">🔎 Diagnóstico URL</button>
+
                 <div class="form-group" style="margin-top: 20px;">
                     <label>Opcións de Datos</label>
                     <button type="button" class="export-btn" onclick="exportarDatos()">📥 Descargar Datos (CSV)</button>
@@ -818,6 +820,15 @@
         localStorage.setItem('precos_amegrove', JSON.stringify(precos));
         localStorage.setItem(PREZOS_VERSION_KEY, PREZOS_VERSION);
     }
+function diagnosticoURL() {
+  const keys = Object.keys(localStorage);
+  alert(
+    `standalone=${window.navigator.standalone}\n` +
+    `href=${location.href}\n` +
+    `origin=${location.origin}\n` +
+    `localStorage keys: ${keys.join(', ') || '(ninguna)'}`
+  );
+}
 
     // ===== VENDAS =====
     document.getElementById('entradaForm').addEventListener('submit', function(e) {
