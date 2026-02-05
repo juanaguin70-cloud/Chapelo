@@ -639,6 +639,20 @@
     'BARCADA': 0
   };
 
+  // === CÁLCULO COOP + IVA ===
+  const COOP_PCT = 0.065; // 6,5% gastos cooperativa
+  const IVA_PCT  = 0.105; // 10,5% IVA a favor (sobre a base) [web:446]
+  const CALC_VERSION = 1;
+
+  function calcularImportesVenda(quilos, prezoKg) {
+    const bruto = quilos * prezoKg;
+    const coop = bruto * COOP_PCT;
+    const base = bruto - coop;
+    const iva = base * IVA_PCT;
+    const total = base + iva;
+    return { bruto, coop, base, iva, total };
+  }
+
   let vendas = [];
   let gastos = [];
   let precos = { ...PREZOS_2026 };
@@ -691,6 +705,41 @@
     mostrarAlerta('✅ Prezos 2026 restablecidos');
   }
 
+  function migrarVendasSeFaiFalta() {
+    let cambiou = false;
+
+    vendas = (vendas || []).map(v => {
+      if (!v) return v;
+
+      const ok =
+        v.calcVersion === CALC_VERSION &&
+        typeof v.bruto === 'number' &&
+        typeof v.coop === 'number' &&
+        typeof v.base === 'number' &&
+        typeof v.iva === 'number' &&
+        typeof v.ganancia === 'number';
+
+      if (ok) return v;
+
+      const quilos = Number(v.quilos || 0);
+      const prezo = Number(v.prezo || 0);
+      const imp = calcularImportesVenda(quilos, prezo);
+
+      cambiou = true;
+      return {
+        ...v,
+        bruto: imp.bruto,
+        coop: imp.coop,
+        base: imp.base,
+        iva: imp.iva,
+        ganancia: imp.total,
+        calcVersion: CALC_VERSION
+      };
+    });
+
+    if (cambiou) guardarDatos();
+  }
+
   function cargarDatos() {
     const datosGuardados = localStorage.getItem('vendas_amegrove');
     const gastosGuardados = localStorage.getItem('gastos_amegrove');
@@ -699,6 +748,9 @@
 
     if (datosGuardados) vendas = JSON.parse(datosGuardados);
     if (gastosGuardados) gastos = JSON.parse(gastosGuardados);
+
+    // migrar cálculo antigo -> novo
+    migrarVendasSeFaiFalta();
 
     if (precosGuardados && versionGuardada === PREZOS_VERSION) {
       precos = JSON.parse(precosGuardados);
@@ -785,17 +837,26 @@
     const quilos = esBaracada ? cantidade : cantidade * 10;
     const prezoAutomatico = esBaracada ? prezo : precos[tipo];
 
+    const imp = calcularImportesVenda(quilos, prezoAutomatico);
+
     const venda = {
       id: Date.now(),
       data, batea, tipo,
       cantidade: esBaracada ? 0 : cantidade,
       quilos,
       prezo: prezoAutomatico,
-      ganancia: quilos * prezoAutomatico,
+
+      bruto: imp.bruto,
+      coop: imp.coop,
+      base: imp.base,
+      iva: imp.iva,
+      ganancia: imp.total,
+
       volta,
       esBaracada,
       cantidadeBarcada: esBaracada ? cantidade : null,
-      porcentaxeJA, porcentaxeJandro, porcentaxeJorge
+      porcentaxeJA, porcentaxeJandro, porcentaxeJorge,
+      calcVersion: CALC_VERSION
     };
 
     vendas.push(venda);
@@ -1035,100 +1096,6 @@
     if (ev && ev.target) ev.target.classList.add('active');
   }
 
-  function guardarPrecios() {
-    precos = {
-      'EXTRA_F': parseFloat(document.getElementById('precioEXTRA_F').value),
-      'EXTRA_R': parseFloat(document.getElementById('precioEXTRA_R').value),
-      'GRANDE1_F': parseFloat(document.getElementById('precioGRANDE1_F').value),
-      'GRANDE1_R': parseFloat(document.getElementById('precioGRANDE1_R').value),
-      'GRANDE2_F': parseFloat(document.getElementById('precioGRANDE2_F').value),
-      'GRANDE2_R': parseFloat(document.getElementById('precioGRANDE2_R').value),
-      'NORMAL_F': parseFloat(document.getElementById('precioNORMAL_F').value),
-      'NORMAL_R': parseFloat(document.getElementById('precioNORMAL_R').value),
-      'EUROPEO_F': parseFloat(document.getElementById('precioEUROPEO_F').value),
-      'EUROPEO_R': parseFloat(document.getElementById('precioEUROPEO_R').value),
-      'LACAS_F': parseFloat(document.getElementById('precioLACAS_F').value),
-      'LACAS_R': parseFloat(document.getElementById('precioLACAS_R').value),
-      'BARCADA': 0
-    };
-    guardarDatos();
-    mostrarAlerta('✅ Precos gardados correctamente');
-    actualizarEtiquetaCantidade();
-  }
-
-  // ====== EXPORTAR EXCEL (XLSX con SheetJS) ======
-  function exportarExcel() {
-    if (vendas.length === 0 && gastos.length === 0) {
-      mostrarAlerta('Non hai datos para exportar', 'error');
-      return;
-    }
-
-    const wb = XLSX.utils.book_new();
-
-    // Hoja 1: Vendas
-    const vendasData = [
-      ['Data', 'Batea', 'Tipo', 'Sacos', 'Quilos', 'Prezo €/kg', 'Ganancia €', 'JA %', 'Jandro %', 'Jorge %', 'Volta']
-    ];
-    vendas.forEach(v => {
-      vendasData.push([
-        v.data,
-        v.batea,
-        v.tipo,
-        v.esBaracada ? '' : v.cantidade,
-        v.quilos,
-        v.prezo,
-        v.ganancia,
-        v.porcentaxeJA,
-        v.porcentaxeJandro,
-        v.porcentaxeJorge,
-        v.volta || ''
-      ]);
-    });
-    const wsVendas = XLSX.utils.aoa_to_sheet(vendasData);
-    XLSX.utils.book_append_sheet(wb, wsVendas, 'Vendas');
-
-    // Hoja 2: Gastos
-    const gastosData = [['Data', 'Hermano', 'Importe €', 'Concepto']];
-    const nombre = (h) => h === 'JA' ? 'Juan Antonio' : h;
-    gastos.forEach(g => {
-      gastosData.push([g.data, nombre(g.hermano), g.importe, g.concepto || '']);
-    });
-    const wsGastos = XLSX.utils.aoa_to_sheet(gastosData);
-    XLSX.utils.book_append_sheet(wb, wsGastos, 'Gastos');
-
-    // Hoja 3: Resumo por Hermano
-    const inicioAno = '2026-01-01';
-    const vendasDesdeInicio = vendas.filter(v => v.data >= inicioAno);
-    const gastosDesdeInicio = gastos.filter(g => g.data >= inicioAno);
-
-    let gananciasJA=0, gananciasJandro=0, gananciasJorge=0;
-    vendasDesdeInicio.forEach(v => {
-      gananciasJA += v.ganancia * (v.porcentaxeJA / 100);
-      gananciasJandro += v.ganancia * (v.porcentaxeJandro / 100);
-      gananciasJorge += v.ganancia * (v.porcentaxeJorge / 100);
-    });
-
-    let gastosJA=0, gastosJandro=0, gastosJorge=0;
-    gastosDesdeInicio.forEach(g => {
-      if (g.hermano === 'JA') gastosJA += g.importe;
-      if (g.hermano === 'Jandro') gastosJandro += g.importe;
-      if (g.hermano === 'Jorge') gastosJorge += g.importe;
-    });
-
-    const resumoData = [
-      ['Hermano', 'Ganancias €', 'Gastos €', 'Neto €'],
-      ['Juan Antonio', gananciasJA.toFixed(2), gastosJA.toFixed(2), (gananciasJA - gastosJA).toFixed(2)],
-      ['Jandro', gananciasJandro.toFixed(2), gastosJandro.toFixed(2), (gananciasJandro - gastosJandro).toFixed(2)],
-      ['Jorge', gananciasJorge.toFixed(2), gastosJorge.toFixed(2), (gananciasJorge - gastosJorge).toFixed(2)],
-      [],
-      ['TOTAL', (gananciasJA + gananciasJandro + gananciasJorge).toFixed(2), (gastosJA + gastosJandro + gastosJorge).toFixed(2), (gananciasJA + gananciasJandro + gananciasJorge - gastosJA - gastosJandro - gastosJorge).toFixed(2)]
-    ];
-    const wsResumo = XLSX.utils.aoa_to_sheet(resumoData);
-    XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
-
-    XLSX.writeFile(wb, `amegrove-${new Date().toISOString().split('T')[0]}.xlsx`);
-  }
-
   function actualizarEtiquetaCantidade() {
     const tipo = document.getElementById('tipo').value;
     const etiqueta = document.getElementById('etiquetaCantidade');
@@ -1272,6 +1239,8 @@
       prezo = Number.isNaN(prezoManual) ? (precos[tipo] ?? 0) : prezoManual;
     }
 
+    const imp = calcularImportesVenda(quilos, prezo);
+
     const venda = vendas[idx];
     venda.data = data;
     venda.batea = batea;
@@ -1284,7 +1253,13 @@
 
     venda.quilos = quilos;
     venda.prezo = prezo;
-    venda.ganancia = quilos * prezo;
+
+    venda.bruto = imp.bruto;
+    venda.coop = imp.coop;
+    venda.base = imp.base;
+    venda.iva = imp.iva;
+    venda.ganancia = imp.total;
+    venda.calcVersion = CALC_VERSION;
 
     venda.porcentaxeJA = pJA;
     venda.porcentaxeJandro = pJandro;
@@ -1351,6 +1326,162 @@
   document.getElementById('modalEditarGasto').addEventListener('click', (e) => {
     if (e.target && e.target.id === 'modalEditarGasto') pecharModalEditarGasto();
   });
+
+  // ====== PREZOS ======
+  function guardarPrecios() {
+    precos = {
+      'EXTRA_F': parseFloat(document.getElementById('precioEXTRA_F').value),
+      'EXTRA_R': parseFloat(document.getElementById('precioEXTRA_R').value),
+      'GRANDE1_F': parseFloat(document.getElementById('precioGRANDE1_F').value),
+      'GRANDE1_R': parseFloat(document.getElementById('precioGRANDE1_R').value),
+      'GRANDE2_F': parseFloat(document.getElementById('precioGRANDE2_F').value),
+      'GRANDE2_R': parseFloat(document.getElementById('precioGRANDE2_R').value),
+      'NORMAL_F': parseFloat(document.getElementById('precioNORMAL_F').value),
+      'NORMAL_R': parseFloat(document.getElementById('precioNORMAL_R').value),
+      'EUROPEO_F': parseFloat(document.getElementById('precioEUROPEO_F').value),
+      'EUROPEO_R': parseFloat(document.getElementById('precioEUROPEO_R').value),
+      'LACAS_F': parseFloat(document.getElementById('precioLACAS_F').value),
+      'LACAS_R': parseFloat(document.getElementById('precioLACAS_R').value),
+      'BARCADA': 0
+    };
+    guardarDatos();
+    mostrarAlerta('✅ Precos gardados correctamente');
+    actualizarEtiquetaCantidade();
+  }
+
+  // ====== EXPORTAR EXCEL (XLSX con SheetJS) ======
+  function exportarExcel() {
+    if ((vendas.length === 0) && (gastos.length === 0)) {
+      mostrarAlerta('Non hai datos para exportar', 'error');
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const FMT_EUR = '#,##0.00"€"';
+    const FMT_PCT = '0.0"%"';
+
+    const setColFmt = (ws, colIdx, fmt) => {
+      if (!ws['!ref']) return;
+      const range = XLSX.utils.decode_range(ws['!ref']);
+      for (let r = range.s.r + 1; r <= range.e.r; r++) {
+        const addr = XLSX.utils.encode_cell({ r, c: colIdx });
+        const cell = ws[addr];
+        if (cell && cell.t === 'n') cell.z = fmt; // formato número [web:454]
+      }
+    };
+
+    // Hoja 1: Vendas (con Bruto/Coop/Base/IVA/Total)
+    const vendasData = [[
+      'Data','Batea','Tipo','Sacos','Quilos','Prezo €/kg',
+      'Bruto €','Coop 6,5% €','Base €','IVA 10,5% €','Total €',
+      'JA %','Jandro %','Jorge %','Volta'
+    ]];
+
+    vendas.forEach(v => {
+      const quilos = Number(v.quilos || 0);
+      const prezo = Number(v.prezo || 0);
+      const imp = calcularImportesVenda(quilos, prezo); // asegura coherencia
+
+      vendasData.push([
+        v.data,
+        v.batea,
+        v.tipo,
+        v.esBaracada ? null : Number(v.cantidade || 0),
+        quilos,
+        prezo,
+
+        imp.bruto,
+        imp.coop,
+        imp.base,
+        imp.iva,
+        imp.total,
+
+        Number(v.porcentaxeJA || 0),
+        Number(v.porcentaxeJandro || 0),
+        Number(v.porcentaxeJorge || 0),
+        v.volta || ''
+      ]);
+    });
+
+    const wsVendas = XLSX.utils.aoa_to_sheet(vendasData); // números quedan como Number [web:459]
+    wsVendas['!freeze'] = { xSplit: 0, ySplit: 1 };
+    wsVendas['!cols'] = [
+      { wch: 11 }, { wch: 12 }, { wch: 12 }, { wch: 7 }, { wch: 8 }, { wch: 10 },
+      { wch: 11 }, { wch: 13 }, { wch: 11 }, { wch: 12 }, { wch: 11 },
+      { wch: 7 }, { wch: 9 }, { wch: 8 }, { wch: 10 }
+    ];
+
+    setColFmt(wsVendas, 5, FMT_EUR);  // Prezo
+    setColFmt(wsVendas, 6, FMT_EUR);  // Bruto
+    setColFmt(wsVendas, 7, FMT_EUR);  // Coop
+    setColFmt(wsVendas, 8, FMT_EUR);  // Base
+    setColFmt(wsVendas, 9, FMT_EUR);  // IVA
+    setColFmt(wsVendas, 10, FMT_EUR); // Total
+
+    setColFmt(wsVendas, 11, FMT_PCT);
+    setColFmt(wsVendas, 12, FMT_PCT);
+    setColFmt(wsVendas, 13, FMT_PCT);
+
+    XLSX.utils.book_append_sheet(wb, wsVendas, 'Vendas');
+
+    // Hoja 2: Gastos
+    const nombre = (h) => h === 'JA' ? 'Juan Antonio' : h;
+    const gastosData = [['Data','Hermano','Importe €','Concepto']];
+    gastos.forEach(g => {
+      gastosData.push([g.data, nombre(g.hermano), Number(g.importe || 0), g.concepto || '' ]);
+    });
+    const wsGastos = XLSX.utils.aoa_to_sheet(gastosData);
+    wsGastos['!freeze'] = { xSplit: 0, ySplit: 1 };
+    wsGastos['!cols'] = [{ wch: 11 }, { wch: 14 }, { wch: 12 }, { wch: 30 }];
+    setColFmt(wsGastos, 2, FMT_EUR);
+    XLSX.utils.book_append_sheet(wb, wsGastos, 'Gastos');
+
+    // Hoja 3: Resumo por Hermano (desde 1-1-2026)
+    const inicioAno = '2026-01-01';
+    const vendasDesdeInicio = vendas.filter(v => v.data >= inicioAno);
+    const gastosDesdeInicio = gastos.filter(g => g.data >= inicioAno);
+
+    let gananciasJA=0, gananciasJandro=0, gananciasJorge=0;
+    vendasDesdeInicio.forEach(v => {
+      const quilos = Number(v.quilos || 0);
+      const prezo = Number(v.prezo || 0);
+      const total = calcularImportesVenda(quilos, prezo).total;
+
+      gananciasJA += total * (Number(v.porcentaxeJA || 0) / 100);
+      gananciasJandro += total * (Number(v.porcentaxeJandro || 0) / 100);
+      gananciasJorge += total * (Number(v.porcentaxeJorge || 0) / 100);
+    });
+
+    let gastosJA=0, gastosJandro=0, gastosJorge=0;
+    gastosDesdeInicio.forEach(g => {
+      if (g.hermano === 'JA') gastosJA += Number(g.importe || 0);
+      if (g.hermano === 'Jandro') gastosJandro += Number(g.importe || 0);
+      if (g.hermano === 'Jorge') gastosJorge += Number(g.importe || 0);
+    });
+
+    const resumoData = [
+      ['Hermano','Ganancias €','Gastos €','Neto €'],
+      ['Juan Antonio', gananciasJA, gastosJA, gananciasJA - gastosJA],
+      ['Jandro', gananciasJandro, gastosJandro, gananciasJandro - gastosJandro],
+      ['Jorge', gananciasJorge, gastosJorge, gananciasJorge - gastosJorge],
+      [],
+      ['TOTAL',
+        gananciasJA + gananciasJandro + gananciasJorge,
+        gastosJA + gastosJandro + gastosJorge,
+        (gananciasJA + gananciasJandro + gananciasJorge) - (gastosJA + gastosJandro + gastosJorge)
+      ]
+    ];
+
+    const wsResumo = XLSX.utils.aoa_to_sheet(resumoData);
+    wsResumo['!cols'] = [{ wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }];
+    setColFmt(wsResumo, 1, FMT_EUR);
+    setColFmt(wsResumo, 2, FMT_EUR);
+    setColFmt(wsResumo, 3, FMT_EUR);
+
+    XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+
+    XLSX.writeFile(wb, `amegrove-${new Date().toISOString().split('T')[0]}.xlsx`);
+  }
 
   // ====== COPIA JSON (EXPORT / IMPORT) ======
   function exportarCopiaJSON() {
@@ -1427,6 +1558,8 @@
           }
 
           guardarDatos();
+          // al importar, migrar al esquema novo tamén
+          migrarVendasSeFaiFalta();
           actualizarFormulario();
           alert("✅ Importación completada");
         } catch (err) {
@@ -1453,3 +1586,4 @@
 </script>
 </body>
 </html>
+
