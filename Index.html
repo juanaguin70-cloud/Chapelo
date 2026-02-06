@@ -349,14 +349,14 @@
 
     <!-- Panel stats -->
     <div class="panel">
-      <h2>📈 Resultados (Ganancias − Gastos) desde 1 Xaneiro 2026</h2>
+      <h2>📈 Resultados (Ganancias + Ingresos − Gastos) desde 1 Xaneiro 2026</h2>
 
       <div class="stats-grid">
         <div class="stat-card">
           <h3>Juan Antonio</h3>
           <div class="value" id="netoJA">0€</div>
           <div style="font-size:0.8em;color:#666;margin-top:6px;">
-            Gan.: <span id="gananciasJA">0€</span> | Gastos: <span id="gastosJA">0€</span>
+            Gan.: <span id="gananciasJA">0€</span> | Ing.: <span id="ingresosJA">0€</span> | Gastos: <span id="gastosJA">0€</span>
           </div>
           <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJA">0</span>% do neto)</div>
         </div>
@@ -365,7 +365,7 @@
           <h3>Jandro</h3>
           <div class="value" id="netoJandro">0€</div>
           <div style="font-size:0.8em;color:#666;margin-top:6px;">
-            Gan.: <span id="gananciasJandro">0€</span> | Gastos: <span id="gastosJandro">0€</span>
+            Gan.: <span id="gananciasJandro">0€</span> | Ing.: <span id="ingresosJandro">0€</span> | Gastos: <span id="gastosJandro">0€</span>
           </div>
           <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJandro">0</span>% do neto)</div>
         </div>
@@ -374,7 +374,7 @@
           <h3>Jorge</h3>
           <div class="value" id="netoJorge">0€</div>
           <div style="font-size:0.8em;color:#666;margin-top:6px;">
-            Gan.: <span id="gananciasJorge">0€</span> | Gastos: <span id="gastosJorge">0€</span>
+            Gan.: <span id="gananciasJorge">0€</span> | Ing.: <span id="ingresosJorge">0€</span> | Gastos: <span id="gastosJorge">0€</span>
           </div>
           <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJorge">0</span>% do neto)</div>
         </div>
@@ -383,7 +383,7 @@
           <h3>Total Neto</h3>
           <div class="value" id="totalNeto">0€</div>
           <div style="font-size:0.8em;color:#666;margin-top:6px;">
-            Gan. total: <span id="totalGanancias">0€</span> | Gastos total: <span id="totalGastos">0€</span>
+            Gan. total: <span id="totalGanancias">0€</span> | Ing. total: <span id="totalIngresos">0€</span> | Gastos total: <span id="totalGastos">0€</span>
           </div>
         </div>
       </div>
@@ -397,6 +397,7 @@
       <div class="tabs">
         <button class="tab-btn active" onclick="mostrarTab('diario', event)">📅 Diario</button>
         <button class="tab-btn" onclick="mostrarTab('gastos', event)">💸 Gastos</button>
+        <button class="tab-btn" onclick="mostrarTab('ingresos', event)">💰 Ingresos Extra</button>
         <button class="tab-btn" onclick="mostrarTab('resumo', event)">📋 Resumo Mensual</button>
         <button class="tab-btn" onclick="mostrarTab('config', event)">⚙️ Configuración</button>
       </div>
@@ -478,6 +479,61 @@
             <tr><th>Data</th><th>Hermano</th><th>Importe</th><th>Concepto</th><th>Acción</th></tr>
             </thead>
             <tbody id="listadoGastos">
+            <tr><td colspan="5" style="text-align:center;color:#999;">Sen datos</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Ingresos Extra -->
+      <div id="ingresos" class="tab-content">
+        <h2>💰 Ingresos Extraordinarios por hermano</h2>
+
+        <div id="alertIngresos" class="alert" style="display:none;"></div>
+
+        <form id="ingresoForm" style="margin-top:10px;">
+          <div class="form-group">
+            <label for="ingresoData">Data do ingreso</label>
+            <input type="date" id="ingresoData" required>
+          </div>
+
+          <div class="form-group">
+            <label for="ingresoHermano">Hermano</label>
+            <select id="ingresoHermano" required>
+              <option value="JA">Juan Antonio</option>
+              <option value="Jandro">Jandro</option>
+              <option value="Jorge">Jorge</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="ingresoImporte">Importe (€)</label>
+            <input type="number" id="ingresoImporte" min="0" step="0.01" required>
+          </div>
+
+          <div class="form-group">
+            <label for="ingresoConcepto">Concepto (opcional)</label>
+            <input type="text" id="ingresoConcepto" placeholder="Venda de material, subvención...">
+          </div>
+
+          <button type="submit" style="background:#28a745;">➕ Engadir ingreso extra</button>
+        </form>
+
+        <div class="form-group" style="margin-top:18px;">
+          <label for="filtroDataIngresos">Ver ingresos do día</label>
+          <input type="date" id="filtroDataIngresos">
+          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+            <button type="button" style="width:auto;background:#6c757d;padding:10px 14px;" onclick="verIngresosHoxe()">Hoxe</button>
+            <button type="button" style="width:auto;background:#0d6efd;padding:10px 14px;" onclick="verIngresosTodos()">Todas</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+            <tr><th>Data</th><th>Hermano</th><th>Importe</th><th>Concepto</th><th>Acción</th></tr>
+            </thead>
+            <tbody id="listadoIngresos">
             <tr><td colspan="5" style="text-align:center;color:#999;">Sen datos</td></tr>
             </tbody>
           </table>
@@ -620,6 +676,33 @@
   </div>
 </div>
 
+<!-- Modal editar ingreso -->
+<div id="modalEditarIngreso" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h2 style="color:#2c5aa0;margin-bottom:12px;">✏️ Editar ingreso extra</h2>
+    <div id="alertEditarIngreso" class="alert error" style="display:none;"></div>
+
+    <input type="hidden" id="editIngresoId">
+
+    <div class="form-group"><label for="editIngresoData">Data</label><input type="date" id="editIngresoData" required></div>
+
+    <div class="form-group">
+      <label for="editIngresoHermano">Hermano</label>
+      <select id="editIngresoHermano" required>
+        <option value="JA">Juan Antonio</option><option value="Jandro">Jandro</option><option value="Jorge">Jorge</option>
+      </select>
+    </div>
+
+    <div class="form-group"><label for="editIngresoImporte">Importe (€)</label><input type="number" id="editIngresoImporte" min="0" step="0.01" required></div>
+    <div class="form-group"><label for="editIngresoConcepto">Concepto (opcional)</label><input type="text" id="editIngresoConcepto"></div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button type="button" style="width:auto;padding:12px 16px;" onclick="gardarEdicionIngreso()">💾 Gardar cambios</button>
+      <button type="button" style="width:auto;padding:12px 16px;background:#6c757d;" onclick="pecharModalEditarIngreso()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- SheetJS library para exportar XLSX -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 
@@ -654,6 +737,7 @@
 
   let vendas = [];
   let gastos = [];
+  let ingresosExtra = [];
   let precos = { ...PREZOS_2026 };
 
   let filtroData = new Date().toISOString().split('T')[0];
@@ -662,8 +746,12 @@
   let filtroDataGastos = new Date().toISOString().split('T')[0];
   let verTodosOsGastos = false;
 
+  let filtroDataIngresos = new Date().toISOString().split('T')[0];
+  let verTodosOsIngresos = false;
+
   document.getElementById('data').valueAsDate = new Date();
   document.getElementById('gastoData').valueAsDate = new Date();
+  document.getElementById('ingresoData').valueAsDate = new Date();
 
   function verHoxe() {
     filtroData = new Date().toISOString().split('T')[0];
@@ -691,6 +779,19 @@
   function verGastosTodos() {
     verTodosOsGastos = true;
     actualizarListadoGastos();
+  }
+
+  function verIngresosHoxe() {
+    filtroDataIngresos = new Date().toISOString().split('T')[0];
+    verTodosOsIngresos = false;
+    const fd = document.getElementById('filtroDataIngresos');
+    if (fd) fd.value = filtroDataIngresos;
+    actualizarListadoIngresos();
+  }
+
+  function verIngresosTodos() {
+    verTodosOsIngresos = true;
+    actualizarListadoIngresos();
   }
 
   function restablecerPrezos2026() {
@@ -740,11 +841,13 @@
   function cargarDatos() {
     const datosGuardados = localStorage.getItem('vendas_amegrove');
     const gastosGuardados = localStorage.getItem('gastos_amegrove');
+    const ingresosGuardados = localStorage.getItem('ingresos_amegrove');
     const precosGuardados = localStorage.getItem('precos_amegrove');
     const versionGuardada = localStorage.getItem(PREZOS_VERSION_KEY);
 
     if (datosGuardados) vendas = JSON.parse(datosGuardados);
     if (gastosGuardados) gastos = JSON.parse(gastosGuardados);
+    if (ingresosGuardados) ingresosExtra = JSON.parse(ingresosGuardados);
 
     migrarVendasSeFaiFalta();
 
@@ -777,12 +880,23 @@
       });
     }
 
+    const inputFiltroI = document.getElementById('filtroDataIngresos');
+    if (inputFiltroI) {
+      inputFiltroI.value = filtroDataIngresos;
+      inputFiltroI.addEventListener('change', (e) => {
+        filtroDataIngresos = e.target.value;
+        verTodosOsIngresos = false;
+        actualizarListadoIngresos();
+      });
+    }
+
     actualizarEtiquetaCantidade();
     actualizarTotalPorcentaxe();
     actualizarFormulario();
 
     verHoxe();
     verGastosHoxe();
+    verIngresosHoxe();
 
     try {
       if (!window.navigator.standalone) {
@@ -798,6 +912,7 @@
   function guardarDatos() {
     localStorage.setItem('vendas_amegrove', JSON.stringify(vendas));
     localStorage.setItem('gastos_amegrove', JSON.stringify(gastos));
+    localStorage.setItem('ingresos_amegrove', JSON.stringify(ingresosExtra));
     localStorage.setItem('precos_amegrove', JSON.stringify(precos));
     localStorage.setItem(PREZOS_VERSION_KEY, PREZOS_VERSION);
   }
@@ -891,8 +1006,41 @@
     mostrarAlertaGastos('✅ Gasto engadido correctamente!');
   });
 
+  document.getElementById('ingresoForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const data = document.getElementById('ingresoData').value;
+    const hermano = document.getElementById('ingresoHermano').value;
+    const importe = parseFloat(document.getElementById('ingresoImporte').value);
+    const concepto = document.getElementById('ingresoConcepto').value || '';
+
+    if (!data || !hermano || Number.isNaN(importe) || importe <= 0) {
+      mostrarAlertaIngresos('Introduce unha data e un importe válido (> 0).', 'error');
+      return;
+    }
+
+    const ingreso = { id: Date.now(), data, hermano, importe, concepto };
+    ingresosExtra.push(ingreso);
+    guardarDatos();
+
+    this.reset();
+    document.getElementById('ingresoData').valueAsDate = new Date();
+
+    verIngresosHoxe();
+    actualizarFormulario();
+    mostrarAlertaIngresos('✅ Ingreso extra engadido correctamente!');
+  });
+
   function mostrarAlertaGastos(mensaje, tipo='success') {
     const alertDiv = document.getElementById('alertGastos');
+    alertDiv.textContent = mensaje;
+    alertDiv.className = 'alert' + (tipo === 'error' ? ' error' : '');
+    alertDiv.style.display = 'block';
+    setTimeout(() => { alertDiv.style.display = 'none'; }, 3000);
+  }
+
+  function mostrarAlertaIngresos(mensaje, tipo='success') {
+    const alertDiv = document.getElementById('alertIngresos');
     alertDiv.textContent = mensaje;
     alertDiv.className = 'alert' + (tipo === 'error' ? ' error' : '');
     alertDiv.style.display = 'block';
@@ -902,6 +1050,7 @@
   function actualizarFormulario() {
     actualizarListado();
     actualizarListadoGastos();
+    actualizarListadoIngresos();
     actualizarEstadisticas();
     actualizarReparticion();
     actualizarResumen();
@@ -968,16 +1117,52 @@
     `).join('');
   }
 
+  function actualizarListadoIngresos() {
+    const tbody = document.getElementById('listadoIngresos');
+    const lista = verTodosOsIngresos ? ingresosExtra : ingresosExtra.filter(i => i.data === filtroDataIngresos);
+
+    if (lista.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">
+        Sen datos ${verTodosOsIngresos ? '' : 'para ' + filtroDataIngresos}
+      </td></tr>`;
+      return;
+    }
+
+    const nombre = (h) => h === 'JA' ? 'Juan Antonio' : h;
+
+    tbody.innerHTML = lista.slice().sort((a,b)=> (a.data===b.data ? (b.id-a.id) : (a.data>b.data ? -1 : 1))).map(i => `
+      <tr>
+        <td>${i.data}</td>
+        <td><strong>${nombre(i.hermano)}</strong></td>
+        <td>${i.importe.toFixed(2)}€</td>
+        <td>${(i.concepto || '-')}</td>
+        <td style="white-space:nowrap;">
+          <button type="button" style="background:#0d6efd;color:#fff;border:none;padding:6px 10px;border-radius:3px;cursor:pointer;font-size:0.85em;margin-right:8px;"
+                  onclick="abrirEditarIngreso(${i.id})">Editar</button>
+          <button class="delete-btn" onclick="eliminarIngreso(${i.id})">Borrar</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
   function actualizarEstadisticas() {
     const inicioAno = '2026-01-01';
     const vendasDesdeInicio = vendas.filter(v => v.data >= inicioAno);
     const gastosDesdeInicio = gastos.filter(g => g.data >= inicioAno);
+    const ingresosDesdeInicio = ingresosExtra.filter(i => i.data >= inicioAno);
 
     let gananciasJA=0, gananciasJandro=0, gananciasJorge=0;
     vendasDesdeInicio.forEach(v => {
       gananciasJA += v.ganancia * (v.porcentaxeJA / 100);
       gananciasJandro += v.ganancia * (v.porcentaxeJandro / 100);
       gananciasJorge += v.ganancia * (v.porcentaxeJorge / 100);
+    });
+
+    let ingresosJA=0, ingresosJandro=0, ingresosJorge=0;
+    ingresosDesdeInicio.forEach(i => {
+      if (i.hermano === 'JA') ingresosJA += i.importe;
+      if (i.hermano === 'Jandro') ingresosJandro += i.importe;
+      if (i.hermano === 'Jorge') ingresosJorge += i.importe;
     });
 
     let gastosJA=0, gastosJandro=0, gastosJorge=0;
@@ -987,11 +1172,12 @@
       if (g.hermano === 'Jorge') gastosJorge += g.importe;
     });
 
-    const netoJA = gananciasJA - gastosJA;
-    const netoJandro = gananciasJandro - gastosJandro;
-    const netoJorge = gananciasJorge - gastosJorge;
+    const netoJA = gananciasJA + ingresosJA - gastosJA;
+    const netoJandro = gananciasJandro + ingresosJandro - gastosJandro;
+    const netoJorge = gananciasJorge + ingresosJorge - gastosJorge;
 
     const totalGanancias = gananciasJA + gananciasJandro + gananciasJorge;
+    const totalIngresos = ingresosJA + ingresosJandro + ingresosJorge;
     const totalGastos = gastosJA + gastosJandro + gastosJorge;
     const totalNeto = netoJA + netoJandro + netoJorge;
 
@@ -1003,6 +1189,11 @@
     document.getElementById('gananciasJandro').textContent = gananciasJandro.toFixed(2) + '€';
     document.getElementById('gananciasJorge').textContent = gananciasJorge.toFixed(2) + '€';
     document.getElementById('totalGanancias').textContent = totalGanancias.toFixed(2) + '€';
+
+    document.getElementById('ingresosJA').textContent = ingresosJA.toFixed(2) + '€';
+    document.getElementById('ingresosJandro').textContent = ingresosJandro.toFixed(2) + '€';
+    document.getElementById('ingresosJorge').textContent = ingresosJorge.toFixed(2) + '€';
+    document.getElementById('totalIngresos').textContent = totalIngresos.toFixed(2) + '€';
 
     document.getElementById('gastosJA').textContent = gastosJA.toFixed(2) + '€';
     document.getElementById('gastosJandro').textContent = gastosJandro.toFixed(2) + '€';
@@ -1082,6 +1273,15 @@
     }
   }
 
+  function eliminarIngreso(id) {
+    if (confirm('¿Estás seguro de que queres borrar este ingreso extra?')) {
+      ingresosExtra = ingresosExtra.filter(i => i.id !== id);
+      guardarDatos();
+      actualizarFormulario();
+      mostrarAlertaIngresos('✅ Ingreso extra eliminado');
+    }
+  }
+
   function mostrarTab(tab, ev) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -1133,9 +1333,10 @@
   }
 
   function limpiarTodos() {
-    if (confirm('⚠️ Esto vai eliminar TODOS os datos (vendas e gastos). ¿Estás completamente seguro?')) {
+    if (confirm('⚠️ Esto vai eliminar TODOS os datos (vendas, gastos e ingresos extra). ¿Estás completamente seguro?')) {
       vendas = [];
       gastos = [];
+      ingresosExtra = [];
       guardarDatos();
       actualizarFormulario();
       mostrarAlerta('✅ Todos os datos eliminados');
@@ -1318,6 +1519,57 @@
     if (e.target && e.target.id === 'modalEditarGasto') pecharModalEditarGasto();
   });
 
+  function abrirEditarIngreso(id) {
+    const i = ingresosExtra.find(x => x.id === id);
+    if (!i) return;
+
+    document.getElementById('editIngresoId').value = i.id;
+    document.getElementById('editIngresoData').value = i.data;
+    document.getElementById('editIngresoHermano').value = i.hermano;
+    document.getElementById('editIngresoImporte').value = i.importe;
+    document.getElementById('editIngresoConcepto').value = i.concepto || '';
+
+    document.getElementById('alertEditarIngreso').style.display = 'none';
+    document.getElementById('modalEditarIngreso').style.display = 'flex';
+  }
+
+  function pecharModalEditarIngreso() {
+    document.getElementById('modalEditarIngreso').style.display = 'none';
+  }
+
+  function gardarEdicionIngreso() {
+    const id = parseInt(document.getElementById('editIngresoId').value, 10);
+    const idx = ingresosExtra.findIndex(x => x.id === id);
+    if (idx === -1) return;
+
+    const data = document.getElementById('editIngresoData').value;
+    const hermano = document.getElementById('editIngresoHermano').value;
+    const importe = parseFloat(document.getElementById('editIngresoImporte').value);
+    const concepto = document.getElementById('editIngresoConcepto').value || '';
+
+    if (!data || !hermano || Number.isNaN(importe) || importe <= 0) {
+      const a = document.getElementById('alertEditarIngreso');
+      a.textContent = 'Introduce unha data e un importe válido (> 0).';
+      a.style.display = 'block';
+      return;
+    }
+
+    const i = ingresosExtra[idx];
+    i.data = data;
+    i.hermano = hermano;
+    i.importe = importe;
+    i.concepto = concepto;
+
+    guardarDatos();
+    pecharModalEditarIngreso();
+    actualizarFormulario();
+    mostrarAlertaIngresos('✅ Ingreso extra actualizado correctamente!');
+  }
+
+  document.getElementById('modalEditarIngreso').addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'modalEditarIngreso') pecharModalEditarIngreso();
+  });
+
   function guardarPrecios() {
     precos = {
       'EXTRA_F': parseFloat(document.getElementById('precioEXTRA_F').value),
@@ -1341,14 +1593,14 @@
 
   // ====== EXPORTAR EXCEL ======
   function exportarExcel() {
-    if ((vendas.length === 0) && (gastos.length === 0)) {
+    if ((vendas.length === 0) && (gastos.length === 0) && (ingresosExtra.length === 0)) {
       mostrarAlerta('Non hai datos para exportar', 'error');
       return;
     }
 
     const wb = XLSX.utils.book_new();
     const FMT_EUR = '#,##0.00"€"';
-    const FMT_PCT = '0"%"';  // porcentaje sin decimales [web:478][web:481]
+    const FMT_PCT = '0"%"';
 
     const setColFmt = (ws, colIdx, fmt) => {
       if (!ws['!ref']) return;
@@ -1426,9 +1678,20 @@
     setColFmt(wsGastos, 2, FMT_EUR);
     XLSX.utils.book_append_sheet(wb, wsGastos, 'Gastos');
 
+    const ingresosData = [['Data','Hermano','Importe €','Concepto']];
+    ingresosExtra.forEach(i => {
+      ingresosData.push([i.data, nombre(i.hermano), Number(i.importe || 0), i.concepto || '' ]);
+    });
+    const wsIngresos = XLSX.utils.aoa_to_sheet(ingresosData);
+    wsIngresos['!freeze'] = { xSplit: 0, ySplit: 1 };
+    wsIngresos['!cols'] = [{ wch: 11 }, { wch: 14 }, { wch: 12 }, { wch: 30 }];
+    setColFmt(wsIngresos, 2, FMT_EUR);
+    XLSX.utils.book_append_sheet(wb, wsIngresos, 'Ingresos Extra');
+
     const inicioAno = '2026-01-01';
     const vendasDesdeInicio = vendas.filter(v => v.data >= inicioAno);
     const gastosDesdeInicio = gastos.filter(g => g.data >= inicioAno);
+    const ingresosDesdeInicio = ingresosExtra.filter(i => i.data >= inicioAno);
 
     let gananciasJA=0, gananciasJandro=0, gananciasJorge=0;
     vendasDesdeInicio.forEach(v => {
@@ -1441,6 +1704,13 @@
       gananciasJorge += total * (Number(v.porcentaxeJorge || 0) / 100);
     });
 
+    let ingresosJA=0, ingresosJandro=0, ingresosJorge=0;
+    ingresosDesdeInicio.forEach(i => {
+      if (i.hermano === 'JA') ingresosJA += Number(i.importe || 0);
+      if (i.hermano === 'Jandro') ingresosJandro += Number(i.importe || 0);
+      if (i.hermano === 'Jorge') ingresosJorge += Number(i.importe || 0);
+    });
+
     let gastosJA=0, gastosJandro=0, gastosJorge=0;
     gastosDesdeInicio.forEach(g => {
       if (g.hermano === 'JA') gastosJA += Number(g.importe || 0);
@@ -1449,23 +1719,25 @@
     });
 
     const resumoData = [
-      ['Hermano','Ganancias €','Gastos €','Neto €'],
-      ['Juan Antonio', gananciasJA, gastosJA, gananciasJA - gastosJA],
-      ['Jandro', gananciasJandro, gastosJandro, gananciasJandro - gastosJandro],
-      ['Jorge', gananciasJorge, gastosJorge, gananciasJorge - gastosJorge],
+      ['Hermano','Ganancias €','Ingresos Extra €','Gastos €','Neto €'],
+      ['Juan Antonio', gananciasJA, ingresosJA, gastosJA, gananciasJA + ingresosJA - gastosJA],
+      ['Jandro', gananciasJandro, ingresosJandro, gastosJandro, gananciasJandro + ingresosJandro - gastosJandro],
+      ['Jorge', gananciasJorge, ingresosJorge, gastosJorge, gananciasJorge + ingresosJorge - gastosJorge],
       [],
       ['TOTAL',
         gananciasJA + gananciasJandro + gananciasJorge,
+        ingresosJA + ingresosJandro + ingresosJorge,
         gastosJA + gastosJandro + gastosJorge,
-        (gananciasJA + gananciasJandro + gananciasJorge) - (gastosJA + gastosJandro + gastosJorge)
+        (gananciasJA + gananciasJandro + gananciasJorge) + (ingresosJA + ingresosJandro + ingresosJorge) - (gastosJA + gastosJandro + gastosJorge)
       ]
     ];
 
     const wsResumo = XLSX.utils.aoa_to_sheet(resumoData);
-    wsResumo['!cols'] = [{ wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 }];
+    wsResumo['!cols'] = [{ wch: 14 }, { wch: 14 }, { wch: 18 }, { wch: 14 }, { wch: 14 }];
     setColFmt(wsResumo, 1, FMT_EUR);
     setColFmt(wsResumo, 2, FMT_EUR);
     setColFmt(wsResumo, 3, FMT_EUR);
+    setColFmt(wsResumo, 4, FMT_EUR);
 
     XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
 
@@ -1479,6 +1751,7 @@
       origin: location.origin,
       vendas: Array.isArray(vendas) ? vendas : [],
       gastos: Array.isArray(gastos) ? gastos : [],
+      ingresosExtra: Array.isArray(ingresosExtra) ? ingresosExtra : [],
       precos: precos || {},
       precos_version: localStorage.getItem(PREZOS_VERSION_KEY) || PREZOS_VERSION
     };
@@ -1519,6 +1792,7 @@
 
           const nuevasVendas = Array.isArray(data.vendas) ? data.vendas : [];
           const nuevosGastos = Array.isArray(data.gastos) ? data.gastos : [];
+          const nuevosIngresos = Array.isArray(data.ingresosExtra) ? data.ingresosExtra : [];
           const nuevosPrecos = (data.precos && typeof data.precos === "object") ? data.precos : null;
 
           const reemplazar = confirm(
@@ -1528,6 +1802,7 @@
           if (reemplazar) {
             vendas = nuevasVendas;
             gastos = nuevosGastos;
+            ingresosExtra = nuevosIngresos;
             if (nuevosPrecos) precos = nuevosPrecos;
           } else {
             const idsV = new Set((vendas || []).map(v => v && v.id).filter(Boolean));
@@ -1540,6 +1815,12 @@
             nuevosGastos.forEach(g => {
               if (!g || !g.id) g.id = Date.now() + Math.floor(Math.random() * 100000);
               if (!idsG.has(g.id)) { gastos.push(g); idsG.add(g.id); }
+            });
+
+            const idsI = new Set((ingresosExtra || []).map(i => i && i.id).filter(Boolean));
+            nuevosIngresos.forEach(i => {
+              if (!i || !i.id) i.id = Date.now() + Math.floor(Math.random() * 100000);
+              if (!idsI.has(i.id)) { ingresosExtra.push(i); idsI.add(i.id); }
             });
 
             if (nuevosPrecos) precos = nuevosPrecos;
