@@ -90,7 +90,6 @@
       font-size: 0.95em;
     }
 
-    /* iOS: 16px para evitar auto-zoom */
     input, select, textarea {
       width: 100%;
       padding: 10px 12px;
@@ -359,7 +358,7 @@
           <div style="font-size:0.8em;color:#666;margin-top:6px;">
             Gan.: <span id="gananciasJA">0€</span> | Gastos: <span id="gastosJA">0€</span>
           </div>
-          <div style="font-size:0.75em;color:#666;margin-top:5px;\">(<span id=\"porcentaxeNetoJA\">0</span>% do neto)</div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJA">0</span>% do neto)</div>
         </div>
 
         <div class="stat-card">
@@ -368,7 +367,7 @@
           <div style="font-size:0.8em;color:#666;margin-top:6px;">
             Gan.: <span id="gananciasJandro">0€</span> | Gastos: <span id="gastosJandro">0€</span>
           </div>
-          <div style="font-size:0.75em;color:#666;margin-top:5px;\">(<span id=\"porcentaxeNetoJandro\">0</span>% do neto)</div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJandro">0</span>% do neto)</div>
         </div>
 
         <div class="stat-card">
@@ -377,7 +376,7 @@
           <div style="font-size:0.8em;color:#666;margin-top:6px;">
             Gan.: <span id="gananciasJorge">0€</span> | Gastos: <span id="gastosJorge">0€</span>
           </div>
-          <div style="font-size:0.75em;color:#666;margin-top:5px;\">(<span id=\"porcentaxeNetoJorge\">0</span>% do neto)</div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJorge">0</span>% do neto)</div>
         </div>
 
         <div class="stat-card">
@@ -640,8 +639,8 @@
   };
 
   // === CÁLCULO COOP + IVA ===
-  const COOP_PCT = 0.065; // 6,5% gastos cooperativa
-  const IVA_PCT  = 0.105; // 10,5% IVA a favor (sobre a base) [web:454][web:481]
+  const COOP_PCT = 0.065;
+  const IVA_PCT  = 0.105;
   const CALC_VERSION = 1;
 
   function calcularImportesVenda(quilos, prezoKg) {
@@ -657,14 +656,12 @@
   let gastos = [];
   let precos = { ...PREZOS_2026 };
 
-  // Filtros
   let filtroData = new Date().toISOString().split('T')[0];
   let verTodasAsVendas = false;
 
   let filtroDataGastos = new Date().toISOString().split('T')[0];
   let verTodosOsGastos = false;
 
-  // Defaults fechas
   document.getElementById('data').valueAsDate = new Date();
   document.getElementById('gastoData').valueAsDate = new Date();
 
@@ -749,7 +746,6 @@
     if (datosGuardados) vendas = JSON.parse(datosGuardados);
     if (gastosGuardados) gastos = JSON.parse(gastosGuardados);
 
-    // migrar cálculo antigo -> novo
     migrarVendasSeFaiFalta();
 
     if (precosGuardados && versionGuardada === PREZOS_VERSION) {
@@ -806,7 +802,6 @@
     localStorage.setItem(PREZOS_VERSION_KEY, PREZOS_VERSION);
   }
 
-  // ===== VENDAS =====
   document.getElementById('entradaForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -871,7 +866,6 @@
     mostrarAlerta('✅ Venda engadida correctamente!');
   });
 
-  // ===== GASTOS =====
   document.getElementById('gastoForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
@@ -1156,7 +1150,6 @@
     setTimeout(() => { alertDiv.style.display = 'none'; }, 3500);
   }
 
-  // ====== EDICIÓN VENDAS ======
   function actualizarEtiquetaCantidadeEditar() {
     const tipo = document.getElementById('editTipo').value;
     const etiqueta = document.getElementById('editEtiquetaCantidade');
@@ -1274,7 +1267,6 @@
     if (e.target && e.target.id === 'modalEditar') pecharModalEditar();
   });
 
-  // ====== EDICIÓN GASTOS ======
   function abrirEditarGasto(id) {
     const g = gastos.find(x => x.id === id);
     if (!g) return;
@@ -1326,7 +1318,6 @@
     if (e.target && e.target.id === 'modalEditarGasto') pecharModalEditarGasto();
   });
 
-  // ====== PREZOS ======
   function guardarPrecios() {
     precos = {
       'EXTRA_F': parseFloat(document.getElementById('precioEXTRA_F').value),
@@ -1348,7 +1339,7 @@
     actualizarEtiquetaCantidade();
   }
 
-  // ====== EXPORTAR EXCEL (XLSX con SheetJS) ======
+  // ====== EXPORTAR EXCEL ======
   function exportarExcel() {
     if ((vendas.length === 0) && (gastos.length === 0)) {
       mostrarAlerta('Non hai datos para exportar', 'error');
@@ -1357,7 +1348,7 @@
 
     const wb = XLSX.utils.book_new();
     const FMT_EUR = '#,##0.00"€"';
-    const FMT_PCT = '0.0"%"';
+    const FMT_PCT = '0"%"';  // porcentaje sin decimales [web:478][web:481]
 
     const setColFmt = (ws, colIdx, fmt) => {
       if (!ws['!ref']) return;
@@ -1369,7 +1360,6 @@
       }
     };
 
-    // Hoja 1: Vendas (con Bruto/Coop/Base/IVA/Total)
     const vendasData = [[
       'Data','Batea','Tipo','Sacos','Quilos','Prezo €/kg',
       'Bruto €','Coop 6,5% €','Base €','IVA 10,5% €','Total €',
@@ -1381,10 +1371,9 @@
       const prezo = Number(v.prezo || 0);
       const imp = calcularImportesVenda(quilos, prezo);
 
-      // porcentajes como decimales para que el formato porcentaje sea correcto [web:454][web:481]
-      const pJA = Number(v.porcentaxeJA || 0) / 100;
-      const pJandro = Number(v.porcentaxeJandro || 0) / 100;
-      const pJorge = Number(v.porcentaxeJorge || 0) / 100;
+      const pJA = Number(v.porcentaxeJA || 0);
+      const pJandro = Number(v.porcentaxeJandro || 0);
+      const pJorge = Number(v.porcentaxeJorge || 0);
 
       vendasData.push([
         v.data,
@@ -1393,13 +1382,11 @@
         v.esBaracada ? null : Number(v.cantidade || 0),
         quilos,
         prezo,
-
         imp.bruto,
         imp.coop,
         imp.base,
         imp.iva,
         imp.total,
-
         pJA,
         pJandro,
         pJorge,
@@ -1428,7 +1415,6 @@
 
     XLSX.utils.book_append_sheet(wb, wsVendas, 'Vendas');
 
-    // Hoja 2: Gastos
     const nombre = (h) => h === 'JA' ? 'Juan Antonio' : h;
     const gastosData = [['Data','Hermano','Importe €','Concepto']];
     gastos.forEach(g => {
@@ -1440,7 +1426,6 @@
     setColFmt(wsGastos, 2, FMT_EUR);
     XLSX.utils.book_append_sheet(wb, wsGastos, 'Gastos');
 
-    // Hoja 3: Resumo por Hermano (desde 1-1-2026)
     const inicioAno = '2026-01-01';
     const vendasDesdeInicio = vendas.filter(v => v.data >= inicioAno);
     const gastosDesdeInicio = gastos.filter(g => g.data >= inicioAno);
@@ -1487,7 +1472,6 @@
     XLSX.writeFile(wb, `amegrove-${new Date().toISOString().split('T')[0]}.xlsx`);
   }
 
-  // ====== COPIA JSON (EXPORT / IMPORT) ======
   function exportarCopiaJSON() {
     const backup = {
       schema: 1,
@@ -1574,7 +1558,6 @@
     });
   })();
 
-  // ====== DIAGNÓSTICO (sin consola) ======
   function diagnosticoURL() {
     const keys = Object.keys(localStorage);
     alert(
