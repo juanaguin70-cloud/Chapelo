@@ -359,7 +359,7 @@
           <div style="font-size:0.8em;color:#666;margin-top:6px;">
             Gan.: <span id="gananciasJA">0€</span> | Gastos: <span id="gastosJA">0€</span>
           </div>
-          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJA">0</span>% do neto)</div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;\">(<span id=\"porcentaxeNetoJA\">0</span>% do neto)</div>
         </div>
 
         <div class="stat-card">
@@ -368,7 +368,7 @@
           <div style="font-size:0.8em;color:#666;margin-top:6px;">
             Gan.: <span id="gananciasJandro">0€</span> | Gastos: <span id="gastosJandro">0€</span>
           </div>
-          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJandro">0</span>% do neto)</div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;\">(<span id=\"porcentaxeNetoJandro\">0</span>% do neto)</div>
         </div>
 
         <div class="stat-card">
@@ -377,7 +377,7 @@
           <div style="font-size:0.8em;color:#666;margin-top:6px;">
             Gan.: <span id="gananciasJorge">0€</span> | Gastos: <span id="gastosJorge">0€</span>
           </div>
-          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJorge">0</span>% do neto)</div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;\">(<span id=\"porcentaxeNetoJorge\">0</span>% do neto)</div>
         </div>
 
         <div class="stat-card">
@@ -641,7 +641,7 @@
 
   // === CÁLCULO COOP + IVA ===
   const COOP_PCT = 0.065; // 6,5% gastos cooperativa
-  const IVA_PCT  = 0.105; // 10,5% IVA a favor (sobre a base) [web:446]
+  const IVA_PCT  = 0.105; // 10,5% IVA a favor (sobre a base) [web:454][web:481]
   const CALC_VERSION = 1;
 
   function calcularImportesVenda(quilos, prezoKg) {
@@ -788,7 +788,6 @@
     verHoxe();
     verGastosHoxe();
 
-    // Aviso si estás en Safari (no icono) y no ves vendas/gastos
     try {
       if (!window.navigator.standalone) {
         const tieneVendas = !!localStorage.getItem('vendas_amegrove');
@@ -1366,7 +1365,7 @@
       for (let r = range.s.r + 1; r <= range.e.r; r++) {
         const addr = XLSX.utils.encode_cell({ r, c: colIdx });
         const cell = ws[addr];
-        if (cell && cell.t === 'n') cell.z = fmt; // formato número [web:454]
+        if (cell && cell.t === 'n') cell.z = fmt;
       }
     };
 
@@ -1380,7 +1379,12 @@
     vendas.forEach(v => {
       const quilos = Number(v.quilos || 0);
       const prezo = Number(v.prezo || 0);
-      const imp = calcularImportesVenda(quilos, prezo); // asegura coherencia
+      const imp = calcularImportesVenda(quilos, prezo);
+
+      // porcentajes como decimales para que el formato porcentaje sea correcto [web:454][web:481]
+      const pJA = Number(v.porcentaxeJA || 0) / 100;
+      const pJandro = Number(v.porcentaxeJandro || 0) / 100;
+      const pJorge = Number(v.porcentaxeJorge || 0) / 100;
 
       vendasData.push([
         v.data,
@@ -1396,14 +1400,14 @@
         imp.iva,
         imp.total,
 
-        Number(v.porcentaxeJA || 0),
-        Number(v.porcentaxeJandro || 0),
-        Number(v.porcentaxeJorge || 0),
+        pJA,
+        pJandro,
+        pJorge,
         v.volta || ''
       ]);
     });
 
-    const wsVendas = XLSX.utils.aoa_to_sheet(vendasData); // números quedan como Number [web:459]
+    const wsVendas = XLSX.utils.aoa_to_sheet(vendasData);
     wsVendas['!freeze'] = { xSplit: 0, ySplit: 1 };
     wsVendas['!cols'] = [
       { wch: 11 }, { wch: 12 }, { wch: 12 }, { wch: 7 }, { wch: 8 }, { wch: 10 },
@@ -1411,12 +1415,12 @@
       { wch: 7 }, { wch: 9 }, { wch: 8 }, { wch: 10 }
     ];
 
-    setColFmt(wsVendas, 5, FMT_EUR);  // Prezo
-    setColFmt(wsVendas, 6, FMT_EUR);  // Bruto
-    setColFmt(wsVendas, 7, FMT_EUR);  // Coop
-    setColFmt(wsVendas, 8, FMT_EUR);  // Base
-    setColFmt(wsVendas, 9, FMT_EUR);  // IVA
-    setColFmt(wsVendas, 10, FMT_EUR); // Total
+    setColFmt(wsVendas, 5, FMT_EUR);
+    setColFmt(wsVendas, 6, FMT_EUR);
+    setColFmt(wsVendas, 7, FMT_EUR);
+    setColFmt(wsVendas, 8, FMT_EUR);
+    setColFmt(wsVendas, 9, FMT_EUR);
+    setColFmt(wsVendas, 10, FMT_EUR);
 
     setColFmt(wsVendas, 11, FMT_PCT);
     setColFmt(wsVendas, 12, FMT_PCT);
@@ -1558,7 +1562,6 @@
           }
 
           guardarDatos();
-          // al importar, migrar al esquema novo tamén
           migrarVendasSeFaiFalta();
           actualizarFormulario();
           alert("✅ Importación completada");
@@ -1586,4 +1589,3 @@
 </script>
 </body>
 </html>
-
