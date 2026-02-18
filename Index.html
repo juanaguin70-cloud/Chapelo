@@ -309,7 +309,7 @@
 
         <div class="form-group">
           <label for="prezo" id="etiquetaPrezo">Prezo €/kg</label>
-          <input type="number" id="prezo" min="0" step="0.01" required>
+          <input type="number" id="prezo" min="0" step="0.0001" required>
         </div>
 
         <div id="avisoPorcentaxe" style="background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:10px;border-radius:4px;margin-bottom:10px;display:none;font-size:0.9em;">
@@ -628,7 +628,7 @@
 
     <div class="form-group">
       <label for="editPrezo">Prezo €/kg (se o deixas baleiro, úsase o automático)</label>
-      <input type="number" id="editPrezo" min="0" step="0.01" placeholder="Ex: 1.40">
+      <input type="number" id="editPrezo" min="0" step="0.0001" placeholder="Ex: 1.40">
     </div>
 
     <div class="form-group"><label for="editVolta">Volta</label><input type="text" id="editVolta" placeholder="ex: 1, 2, 3..."></div>
@@ -1067,14 +1067,16 @@
       return;
     }
 
-    tbody.innerHTML = lista.slice().sort((a,b)=> (a.data===b.data ? (b.id-a.id) : (a.data>b.data ? -1 : 1))).map(v => `
+    tbody.innerHTML = lista.slice().sort((a,b)=> (a.data===b.data ? (b.id-a.id) : (a.data>b.data ? -1 : 1))).map(v => {
+      const prezoDisplay = v.esBaracada ? v.prezo.toFixed(4) : v.prezo.toFixed(2);
+      return `
       <tr>
         <td>${v.data}</td>
         <td><strong>${v.batea}</strong></td>
         <td>${v.tipo}</td>
         <td>${v.esBaracada ? (v.cantidadeBarcada + ' kg') : (v.cantidade + ' sacos')}</td>
         <td>${v.quilos} kg</td>
-        <td>${v.prezo.toFixed(2)}€</td>
+        <td>${prezoDisplay}€</td>
         <td><strong>${v.ganancia.toFixed(2)}€</strong></td>
         <td>${v.porcentaxeJA}%</td>
         <td>${v.porcentaxeJandro}%</td>
@@ -1086,7 +1088,8 @@
           <button class="delete-btn" onclick="eliminarVenda(${v.id})">Borrar</button>
         </td>
       </tr>
-    `).join('');
+    `;
+    }).join('');
   }
 
   function actualizarListadoGastos() {
@@ -1297,14 +1300,16 @@
 
     if (tipo === 'BARCADA') {
       etiqueta.textContent = 'Cantidade (kilos totais)';
-      etiquetaPrezo.textContent = 'Prezo €/kg (manual)';
+      etiquetaPrezo.textContent = 'Prezo €/kg (manual, 4 decimais)';
       inputPrezo.disabled = false;
       inputPrezo.value = '';
+      inputPrezo.step = '0.0001';
     } else {
       etiqueta.textContent = 'Cantidade (sacos de 10kg)';
       etiquetaPrezo.textContent = 'Prezo €/kg (automático)';
       inputPrezo.disabled = true;
       inputPrezo.value = precos[tipo] || 0;
+      inputPrezo.step = '0.01';
     }
   }
 
@@ -1358,10 +1363,12 @@
 
     if (tipo === 'BARCADA') {
       etiqueta.textContent = 'Cantidade (kilos totais)';
-      inputPrezo.placeholder = 'Prezo €/kg (manual)';
+      inputPrezo.placeholder = 'Prezo €/kg (manual, 4 decimais)';
+      inputPrezo.step = '0.0001';
     } else {
       etiqueta.textContent = 'Cantidade (sacos de 10kg)';
       inputPrezo.placeholder = `Auto: ${(precos[tipo] ?? 0).toFixed(2)} €/kg (ou escribe outro)`;
+      inputPrezo.step = '0.01';
     }
   }
 
@@ -1740,6 +1747,50 @@
     setColFmt(wsResumo, 4, FMT_EUR);
 
     XLSX.utils.book_append_sheet(wb, wsResumo, 'Resumo');
+
+    // === NUEVA HOJA: POR QUINCENAS ===
+    const quincenas = {};
+    vendasDesdeInicio.forEach(v => {
+      const fecha = v.data;
+      const [ano, mes, dia] = fecha.split('-').map(Number);
+      const quincena = dia <= 15 ? `${ano}-${String(mes).padStart(2,'0')}-Q1` : `${ano}-${String(mes).padStart(2,'0')}-Q2`;
+
+      if (!quincenas[quincena]) {
+        quincenas[quincena] = { JA: 0, Jandro: 0, Jorge: 0 };
+      }
+
+      const total = calcularImportesVenda(v.quilos, v.prezo).total;
+      quincenas[quincena].JA += total * (v.porcentaxeJA / 100);
+      quincenas[quincena].Jandro += total * (v.porcentaxeJandro / 100);
+      quincenas[quincena].Jorge += total * (v.porcentaxeJorge / 100);
+    });
+
+    const quincenaData = [['Periodo','Juan Antonio €','Jandro €','Jorge €']];
+    let acumJA = 0, acumJandro = 0, acumJorge = 0;
+
+    Object.keys(quincenas).sort().forEach(q => {
+      const d = quincenas[q];
+      acumJA += d.JA;
+      acumJandro += d.Jandro;
+      acumJorge += d.Jorge;
+
+      const [ano, mes, quinc] = q.split('-');
+      const label = quinc === 'Q1' ? `${mes}/${ano} (1-15)` : `${mes}/${ano} (16-fin)`;
+
+      quincenaData.push([label, d.JA, d.Jandro, d.Jorge]);
+    });
+
+    quincenaData.push([]);
+    quincenaData.push(['ACUMULADO TOTAL', acumJA, acumJandro, acumJorge]);
+
+    const wsQuincenas = XLSX.utils.aoa_to_sheet(quincenaData);
+    wsQuincenas['!freeze'] = { xSplit: 0, ySplit: 1 };
+    wsQuincenas['!cols'] = [{ wch: 18 }, { wch: 16 }, { wch: 16 }, { wch: 16 }];
+    setColFmt(wsQuincenas, 1, FMT_EUR);
+    setColFmt(wsQuincenas, 2, FMT_EUR);
+    setColFmt(wsQuincenas, 3, FMT_EUR);
+
+    XLSX.utils.book_append_sheet(wb, wsQuincenas, 'Por Quincenas');
 
     XLSX.writeFile(wb, `amegrove-${new Date().toISOString().split('T')[0]}.xlsx`);
   }
