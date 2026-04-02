@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>Xestor Amegrove 2026</title>
+  <title>Xestor Amegrove</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     :root{--pad:20px}
@@ -13,6 +13,11 @@
     header h1{font-size:2.2em;margin-bottom:8px}
     header p{font-size:1em;opacity:.9}
     #syncBar{position:absolute;top:10px;right:14px;font-size:.78em;display:flex;align-items:center;gap:5px}
+    #yearSelector{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px}
+    #yearSelector button{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;padding:4px 12px;border-radius:20px;cursor:pointer;font-size:.9em;width:auto;margin-top:0;font-weight:600}
+    #yearSelector button:hover{background:rgba(255,255,255,.35);transform:none;box-shadow:none}
+    #yearSelector select{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:white;padding:6px 14px;border-radius:20px;font-size:1.1em;font-weight:bold;cursor:pointer;text-align:center;width:auto}
+    #yearSelector select option{background:#1a3d5c;color:white}
     #syncDot{width:8px;height:8px;border-radius:50%;background:#aaa;display:inline-block}
     #syncDot.ok{background:#4ade80}
     #syncDot.syncing{background:#fbbf24;animation:pulse 1s infinite}
@@ -79,7 +84,12 @@
 <div class="container">
   <header>
     <div id="syncBar"><span id="syncDot"></span><span id="syncText">Conectando…</span></div>
-    <h1>🐚 Xestor Amegrove 2026</h1>
+    <h1>🐚 Xestor Amegrove</h1>
+    <div id="yearSelector">
+      <button onclick="cambiarAno(-1)">◀</button>
+      <select id="selectAno" onchange="setAno(parseInt(this.value))"></select>
+      <button onclick="cambiarAno(1)">▶</button>
+    </div>
     <p>Sistema de Reparto e Ganancias Diarias - Cooperativa de Mexillón</p>
   </header>
   <div class="content">
@@ -120,7 +130,7 @@
     </div>
 
     <div class="panel">
-      <h2>📈 Resultados desde 1 Xaneiro 2026</h2>
+      <h2>📈 Resultados <span id="tituloAno">2026</span></h2>
       <div class="stats-grid">
         <div class="stat-card"><h3>Juan Antonio</h3><div class="value" id="netoJA">0€</div><div style="font-size:.8em;color:#666;margin-top:6px">Gan.:<span id="gananciasJA">0€</span> Ing.:<span id="ingresosJA">0€</span> Gas.:<span id="gastosJA">0€</span></div><div style="font-size:.75em;color:#666;margin-top:5px">(<span id="porcentaxeNetoJA">0</span>% do neto)</div></div>
         <div class="stat-card"><h3>Jandro</h3><div class="value" id="netoJandro">0€</div><div style="font-size:.8em;color:#666;margin-top:6px">Gan.:<span id="gananciasJandro">0€</span> Ing.:<span id="ingresosJandro">0€</span> Gas.:<span id="gastosJandro">0€</span></div><div style="font-size:.75em;color:#666;margin-top:5px">(<span id="porcentaxeNetoJandro">0</span>% do neto)</div></div>
@@ -313,6 +323,7 @@ const COOP_PCT=0.065,IVA_PCT=0.105,CALC_VERSION=1;
 const PREZOS_2026={EXTRA_F:1.9,EXTRA_R:1.9,GRANDE1_F:1.4,GRANDE1_R:1.4,GRANDE2_F:1.2,GRANDE2_R:1.2,NORMAL_F:1,NORMAL_R:1,EUROPEO_F:.8,EUROPEO_R:.8,LACAS_F:.6,LACAS_R:.6,BARCADA:0};
 
 let vendas=[],gastos=[],ingresosExtra=[],precos={...PREZOS_2026};
+let anoActivo=String(new Date().getFullYear());
 let filtroData=hoxe(),verTodasAsVendas=false;
 let filtroDataGastos=hoxe(),verTodosOsGastos=false;
 let filtroDataIngresos=hoxe(),verTodosOsIngresos=false;
@@ -581,11 +592,51 @@ window.exportarJSON=exportarJSON;
 // =============================================
 // UI
 // =============================================
-function actualizarUI(){actualizarListado();actualizarListadoGastos();actualizarListadoIngresos();actualizarEstadisticas();actualizarReparticion();actualizarResumen();}
+function getAnosDisponibles(){
+  const anos=new Set();
+  const anoHoxe=String(new Date().getFullYear());
+  anos.add(anoHoxe);
+  vendas.forEach(v=>{if(v.data)anos.add(v.data.substring(0,4));});
+  gastos.forEach(g=>{if(g.data)anos.add(g.data.substring(0,4));});
+  ingresosExtra.forEach(i=>{if(i.data)anos.add(i.data.substring(0,4));});
+  return [...anos].sort().reverse();
+}
+
+function actualizarSelectorAno(){
+  const sel=document.getElementById('selectAno');
+  if(!sel)return;
+  const anos=getAnosDisponibles();
+  sel.innerHTML=anos.map(a=>`<option value="${a}" ${a===anoActivo?'selected':''}>${a}</option>`).join('');
+  const titulo=document.getElementById('tituloAno');
+  if(titulo)titulo.textContent=anoActivo;
+}
+
+function setAno(ano){
+  anoActivo=String(ano);
+  const sel=document.getElementById('selectAno');
+  if(sel)sel.value=anoActivo;
+  const titulo=document.getElementById('tituloAno');
+  if(titulo)titulo.textContent=anoActivo;
+  filtroData=hoxe().startsWith(anoActivo)?hoxe():anoActivo+'-12-31';
+  filtroDataGastos=filtroData;
+  filtroDataIngresos=filtroData;
+  actualizarUI();
+}
+window.setAno=setAno;
+
+function cambiarAno(dir){
+  const anos=getAnosDisponibles();
+  const idx=anos.indexOf(anoActivo);
+  const nuevoIdx=idx+(-dir);
+  if(nuevoIdx>=0&&nuevoIdx<anos.length)setAno(anos[nuevoIdx]);
+}
+window.cambiarAno=cambiarAno;
+
+function actualizarUI(){actualizarSelectorAno();actualizarListado();actualizarListadoGastos();actualizarListadoIngresos();actualizarEstadisticas();actualizarReparticion();actualizarResumen();}
 
 function actualizarListado(){
   const tb=document.getElementById('listadoVendas');
-  const lista=verTodasAsVendas?vendas:vendas.filter(v=>v.data===filtroData);
+  const lista=verTodasAsVendas?vendas.filter(v=>v.data.startsWith(anoActivo)):vendas.filter(v=>v.data===filtroData);
   if(!lista.length){tb.innerHTML=`<tr><td colspan="12" style="text-align:center;color:#999">Sen datos ${verTodasAsVendas?'':'para '+filtroData}</td></tr>`;return;}
   tb.innerHTML=lista.slice().sort((a,b)=>a.data===b.data?Number(b.id)-Number(a.id):(a.data>b.data?-1:1)).map(v=>`<tr>
     <td>${v.data}</td><td><strong>${v.batea}</strong></td><td>${v.tipo}</td>
@@ -601,7 +652,7 @@ function actualizarListado(){
 
 function actualizarListadoGastos(){
   const tb=document.getElementById('listadoGastos');
-  const lista=verTodosOsGastos?gastos:gastos.filter(g=>g.data===filtroDataGastos);
+  const lista=verTodosOsGastos?gastos.filter(g=>g.data.startsWith(anoActivo)):gastos.filter(g=>g.data===filtroDataGastos);
   if(!lista.length){tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:#999">Sen datos ${verTodosOsGastos?'':'para '+filtroDataGastos}</td></tr>`;return;}
   tb.innerHTML=lista.slice().sort((a,b)=>a.data===b.data?Number(b.id)-Number(a.id):(a.data>b.data?-1:1)).map(g=>`<tr>
     <td>${g.data}</td><td><strong>${nom(g.hermano)}</strong></td><td>${Number(g.importe).toFixed(2)}€</td><td>${g.concepto||'-'}</td>
@@ -613,7 +664,7 @@ function actualizarListadoGastos(){
 
 function actualizarListadoIngresos(){
   const tb=document.getElementById('listadoIngresos');
-  const lista=verTodosOsIngresos?ingresosExtra:ingresosExtra.filter(i=>i.data===filtroDataIngresos);
+  const lista=verTodosOsIngresos?ingresosExtra.filter(i=>i.data.startsWith(anoActivo)):ingresosExtra.filter(i=>i.data===filtroDataIngresos);
   if(!lista.length){tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:#999">Sen datos ${verTodosOsIngresos?'':'para '+filtroDataIngresos}</td></tr>`;return;}
   tb.innerHTML=lista.slice().sort((a,b)=>a.data===b.data?Number(b.id)-Number(a.id):(a.data>b.data?-1:1)).map(i=>`<tr>
     <td>${i.data}</td><td><strong>${nom(i.hermano)}</strong></td><td>${Number(i.importe).toFixed(2)}€</td><td>${i.concepto||'-'}</td>
@@ -624,8 +675,8 @@ function actualizarListadoIngresos(){
 }
 
 function actualizarEstadisticas(){
-  const ini='2026-01-01';
-  const vv=vendas.filter(v=>v.data>=ini),gg=gastos.filter(g=>g.data>=ini),ii=ingresosExtra.filter(i=>i.data>=ini);
+  const ini=anoActivo+'-01-01', fin=anoActivo+'-12-31';
+  const vv=vendas.filter(v=>v.data>=ini&&v.data<=fin),gg=gastos.filter(g=>g.data>=ini&&g.data<=fin),ii=ingresosExtra.filter(i=>i.data>=ini&&i.data<=fin);
   let gJA=0,gJandro=0,gJorge=0;
   vv.forEach(v=>{gJA+=Number(v.ganancia)*(Number(v.porcentaxeJA)/100);gJandro+=Number(v.ganancia)*(Number(v.porcentaxeJandro)/100);gJorge+=Number(v.ganancia)*(Number(v.porcentaxeJorge)/100);});
   let iJA=0,iJandro=0,iJorge=0;
@@ -644,7 +695,7 @@ function actualizarEstadisticas(){
 }
 
 function actualizarReparticion(){
-  const lista=verTodasAsVendas?vendas:vendas.filter(v=>v.data===filtroData);
+  const lista=verTodasAsVendas?vendas.filter(v=>v.data.startsWith(anoActivo)):vendas.filter(v=>v.data===filtroData);
   const rep={};
   lista.forEach(v=>{if(!rep[v.batea])rep[v.batea]={sacos:0,quilos:0,ganancia:0};if(!v.esBaracada)rep[v.batea].sacos+=Number(v.cantidade)||0;rep[v.batea].quilos+=Number(v.quilos)||0;rep[v.batea].ganancia+=Number(v.ganancia)||0;});
   document.getElementById('reparticionBatea').innerHTML=Object.entries(rep).map(([b,d])=>`<div class="summary-row"><span><strong>${b}</strong></span><span>${d.sacos} sacos | ${d.quilos} kg | <strong>${d.ganancia.toFixed(2)}€</strong></span></div>`).join('')||'<p style="color:#999">Sen datos</p>';
@@ -652,7 +703,7 @@ function actualizarReparticion(){
 
 function actualizarResumen(){
   const res={};
-  vendas.forEach(v=>{const m=v.data.substring(0,7);if(!res[m])res[m]={sacos:0,quilos:0,ganancia:0,registros:0};if(!v.esBaracada)res[m].sacos+=Number(v.cantidade)||0;res[m].quilos+=Number(v.quilos)||0;res[m].ganancia+=Number(v.ganancia)||0;res[m].registros++;});
+  vendas.filter(v=>v.data.startsWith(anoActivo)).forEach(v=>{const m=v.data.substring(0,7);if(!res[m])res[m]={sacos:0,quilos:0,ganancia:0,registros:0};if(!v.esBaracada)res[m].sacos+=Number(v.cantidade)||0;res[m].quilos+=Number(v.quilos)||0;res[m].ganancia+=Number(v.ganancia)||0;res[m].registros++;});
   document.getElementById('resumoMensual').innerHTML=Object.entries(res).sort().reverse().map(([m,d])=>`<div class="month-summary"><h3>${new Date(m+'-01').toLocaleDateString('gl-ES',{month:'long',year:'numeric'})}</h3><div class="summary-row"><span>Rexistros:</span><strong>${d.registros}</strong></div><div class="summary-row"><span>Total de Sacos:</span><strong>${d.sacos}</strong></div><div class="summary-row"><span>Total de Quilos:</span><strong>${d.quilos}</strong></div><div class="summary-row"><span>Total de Ganancias:</span><strong style="color:#28a745">${d.ganancia.toFixed(2)}€</strong></div></div>`).join('')||'<p style="color:#999">Sen datos</p>';
 }
 
@@ -749,8 +800,8 @@ function exportarExcel(){
   const wsG=XLSX.utils.aoa_to_sheet(gData);setFmt(wsG,[2],FMT_EUR);XLSX.utils.book_append_sheet(wb,wsG,'Gastos');
   const iData=[['Data','Hermano','Importe €','Concepto'],...ingresosExtra.map(i=>[i.data,nom(i.hermano),Number(i.importe||0),i.concepto||''])];
   const wsI=XLSX.utils.aoa_to_sheet(iData);setFmt(wsI,[2],FMT_EUR);XLSX.utils.book_append_sheet(wb,wsI,'Ingresos Extra');
-  const ini='2026-01-01';
-  const vv=vendas.filter(v=>v.data>=ini),gg=gastos.filter(g=>g.data>=ini),ii=ingresosExtra.filter(i=>i.data>=ini);
+  const ini=anoActivo+'-01-01', fin=anoActivo+'-12-31';
+  const vv=vendas.filter(v=>v.data>=ini&&v.data<=fin),gg=gastos.filter(g=>g.data>=ini&&g.data<=fin),ii=ingresosExtra.filter(i=>i.data>=ini&&i.data<=fin);
   let gJA=0,gJandro=0,gJorge=0;vv.forEach(v=>{const t=calc(Number(v.quilos||0),Number(v.prezo||0)).total;gJA+=t*(Number(v.porcentaxeJA||0)/100);gJandro+=t*(Number(v.porcentaxeJandro||0)/100);gJorge+=t*(Number(v.porcentaxeJorge||0)/100);});
   let iJA=0,iJandro=0,iJorge=0;ii.forEach(i=>{if(i.hermano==='JA')iJA+=Number(i.importe||0);if(i.hermano==='Jandro')iJandro+=Number(i.importe||0);if(i.hermano==='Jorge')iJorge+=Number(i.importe||0);});
   let gasJA=0,gasJandro=0,gasJorge=0;gg.forEach(g=>{if(g.hermano==='JA')gasJA+=Number(g.importe||0);if(g.hermano==='Jandro')gasJandro+=Number(g.importe||0);if(g.hermano==='Jorge')gasJorge+=Number(g.importe||0);});
