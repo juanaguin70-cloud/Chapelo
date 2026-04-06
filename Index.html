@@ -807,6 +807,59 @@ function exportarExcel(){
   let gasJA=0,gasJandro=0,gasJorge=0;gg.forEach(g=>{if(g.hermano==='JA')gasJA+=Number(g.importe||0);if(g.hermano==='Jandro')gasJandro+=Number(g.importe||0);if(g.hermano==='Jorge')gasJorge+=Number(g.importe||0);});
   const rData=[['Hermano','Ganancias €','Ingresos Extra €','Gastos €','Neto €'],['Juan Antonio',gJA,iJA,gasJA,gJA+iJA-gasJA],['Jandro',gJandro,iJandro,gasJandro,gJandro+iJandro-gasJandro],['Jorge',gJorge,iJorge,gasJorge,gJorge+iJorge-gasJorge],[],['TOTAL',gJA+gJandro+gJorge,iJA+iJandro+iJorge,gasJA+gasJandro+gasJorge,(gJA+gJandro+gJorge)+(iJA+iJandro+iJorge)-(gasJA+gasJandro+gasJorge)]];
   const wsR=XLSX.utils.aoa_to_sheet(rData);setFmt(wsR,[1,2,3,4],FMT_EUR);XLSX.utils.book_append_sheet(wb,wsR,'Resumo');
+  // ====== HOJA POR QUINCENAS ======
+  const quincenas = {};
+  vv.forEach(v => {
+    const [ano, mes, dia] = v.data.split('-').map(Number);
+    const esQ1 = dia <= 15;
+    const key = `${ano}-${String(mes).padStart(2,'0')}-${esQ1?'Q1':'Q2'}`;
+    if (!quincenas[key]) quincenas[key] = { JA:0, Jandro:0, Jorge:0, label:'', cobro:'' };
+    const label = esQ1 ? `${String(mes).padStart(2,'0')}/${ano} (1-15)` : `${String(mes).padStart(2,'0')}/${ano} (16-fin)`;
+    quincenas[key].label = label;
+
+    // Fecha de cobro = +90 dias desde el ultimo dia de la quincena
+    const ultimoDia = esQ1 ? new Date(ano, mes-1, 15) : new Date(ano, mes, 0);
+    const fechaCobro = new Date(ultimoDia.getTime() + 90*24*60*60*1000);
+    quincenas[key].cobro = `${String(fechaCobro.getDate()).padStart(2,'0')}/${String(fechaCobro.getMonth()+1).padStart(2,'0')}/${fechaCobro.getFullYear()}`;
+
+    const total = calc(Number(v.quilos||0), Number(v.prezo||0)).total;
+    quincenas[key].JA     += total * (Number(v.porcentaxeJA||0)     / 100);
+    quincenas[key].Jandro += total * (Number(v.porcentaxeJandro||0) / 100);
+    quincenas[key].Jorge  += total * (Number(v.porcentaxeJorge||0)  / 100);
+  });
+
+  const qKeys = Object.keys(quincenas).sort();
+  let acumJA=0, acumJandro=0, acumJorge=0;
+  const qData = [['Periodo','Juan Antonio €','Jandro €','Jorge €','Total €','Data de Cobro (90 días)']];
+  qKeys.forEach(k => {
+    const d = quincenas[k];
+    acumJA     += d.JA;
+    acumJandro += d.Jandro;
+    acumJorge  += d.Jorge;
+    const total = d.JA + d.Jandro + d.Jorge;
+    qData.push([d.label, d.JA, d.Jandro, d.Jorge, total, d.cobro]);
+  });
+  qData.push([]);
+  qData.push(['ACUMULADO TOTAL', acumJA, acumJandro, acumJorge, acumJA+acumJandro+acumJorge, '']);
+
+  const wsQ = XLSX.utils.aoa_to_sheet(qData);
+  wsQ['!freeze'] = {xSplit:0, ySplit:1};
+  wsQ['!cols'] = [{wch:20},{wch:16},{wch:16},{wch:16},{wch:14},{wch:22}];
+  setFmt(wsQ, [1,2,3,4], FMT_EUR);
+
+  // Negrita en cabecera y fila de totales
+  const qRange = XLSX.utils.decode_range(wsQ['!ref']);
+  [0, qData.length-1].forEach(r => {
+    for (let c = qRange.s.c; c <= qRange.e.c; c++) {
+      const addr = XLSX.utils.encode_cell({r, c});
+      if (!wsQ[addr]) wsQ[addr] = {t:'s', v:''};
+      if (!wsQ[addr].s) wsQ[addr].s = {};
+      wsQ[addr].s.font = {bold: true};
+    }
+  });
+
+  XLSX.utils.book_append_sheet(wb, wsQ, 'Por Quincenas');
+
   XLSX.writeFile(wb,`amegrove-${hoxe()}.xlsx`);
 }
 window.exportarExcel=exportarExcel;
