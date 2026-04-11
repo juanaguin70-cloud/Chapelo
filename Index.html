@@ -1,219 +1,553 @@
 <!DOCTYPE html>
 <html lang="gl">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>Xestor Amegrove</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Xestor Amegrove 2026 - Reparto e Ganancias Diarias</title>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    :root{--pad:20px}
-    body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;padding:var(--pad);-webkit-text-size-adjust:100%}
-    .container{max-width:1400px;margin:0 auto;background:white;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,.3);overflow:hidden}
-    header{background:linear-gradient(135deg,#1a3d5c,#2c5aa0);color:white;padding:30px;text-align:center;position:relative}
-    header h1{font-size:2.2em;margin-bottom:8px}
-    header p{font-size:1em;opacity:.9}
-    #syncBar{position:absolute;top:10px;right:14px;font-size:.78em;display:flex;align-items:center;gap:5px}
-    #yearSelector{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px}
-    #yearSelector button{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;padding:4px 12px;border-radius:20px;cursor:pointer;font-size:.9em;width:auto;margin-top:0;font-weight:600}
-    #yearSelector button:hover{background:rgba(255,255,255,.35);transform:none;box-shadow:none}
-    #yearSelector select{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:white;padding:6px 14px;border-radius:20px;font-size:1.1em;font-weight:bold;cursor:pointer;text-align:center;width:auto}
-    #yearSelector select option{background:#1a3d5c;color:white}
-    #syncDot{width:8px;height:8px;border-radius:50%;background:#aaa;display:inline-block}
-    #syncDot.ok{background:#4ade80}
-    #syncDot.syncing{background:#fbbf24;animation:pulse 1s infinite}
-    #syncDot.error{background:#f87171}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-    .content{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:30px}
-    @media(max-width:1200px){.content{grid-template-columns:1fr}}
-    @media(max-width:600px){:root{--pad:10px}header{padding:18px}header h1{font-size:1.8em}.content{padding:15px;gap:12px}.panel{padding:14px}.stats-grid{grid-template-columns:1fr}.tabs{flex-wrap:wrap}.tab-btn{padding:10px 12px;flex:1 1 auto}table{font-size:.8em}th,td{padding:8px}}
-    .panel{background:#f8f9fa;border-radius:8px;padding:20px;border-left:5px solid #667eea;min-width:0}
-    .panel h2{color:#2c5aa0;margin-bottom:15px;font-size:1.4em}
-    .form-group{margin-bottom:15px}
-    label{display:block;margin-bottom:5px;color:#333;font-weight:500;font-size:.95em}
-    input,select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:4px;font-size:16px;transition:border-color .3s}
-    input:focus,select:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
-    button{background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;padding:12px 24px;border-radius:4px;cursor:pointer;font-size:1em;font-weight:600;transition:transform .2s,box-shadow .2s;width:100%;margin-top:10px}
-    button:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(102,126,234,.4)}
-    button:active{transform:translateY(0)}
-    button:disabled{opacity:.6;cursor:wait;transform:none}
-    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
-    .stat-card{background:white;padding:15px;border-radius:6px;border:1px solid #e0e0e0;text-align:center;min-width:0}
-    .stat-card h3{color:#666;font-size:.85em;margin-bottom:8px;text-transform:uppercase}
-    .stat-card .value{font-size:1.8em;font-weight:bold;color:#2c5aa0}
-    .table-responsive{overflow-x:auto;margin-top:15px;-webkit-overflow-scrolling:touch}
-    table{width:100%;border-collapse:collapse;font-size:.9em}
-    thead{background:#2c5aa0;color:white}
-    th{padding:12px;text-align:left;font-weight:600}
-    td{padding:10px;border-bottom:1px solid #eee}
-    tbody tr:hover{background:#f5f5f5}
-    .delete-btn{background:#dc3545;color:white;border:none;padding:6px 12px;border-radius:3px;cursor:pointer;font-size:.85em;width:auto;margin-top:0}
-    .delete-btn:hover{background:#c82333;transform:none;box-shadow:none}
-    .edit-btn{background:#0d6efd;color:white;border:none;padding:6px 10px;border-radius:3px;cursor:pointer;font-size:.85em;width:auto;margin-top:0;margin-right:6px}
-    .edit-btn:hover{background:#0b5ed7;transform:none;box-shadow:none}
-    .full-width{grid-column:1/-1}
-    .tabs{display:flex;gap:10px;margin-bottom:20px;border-bottom:2px solid #ddd}
-    .tab-btn{padding:10px 20px;background:none;border:none;color:#666;cursor:pointer;font-size:1em;font-weight:600;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .3s;width:auto;margin-top:0}
-    .tab-btn.active{color:#667eea;border-bottom-color:#667eea}
-    .tab-content{display:none}
-    .tab-content.active{display:block}
-    .summary-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #eee;font-size:.95em}
-    .summary-row strong{color:#2c5aa0}
-    .export-btn{background:#28a745}
-    .alert{background:#d4edda;border:1px solid #c3e6cb;color:#155724;padding:12px;border-radius:4px;margin-bottom:15px}
-    .alert.error{background:#f8d7da;border-color:#f5c6cb;color:#721c24}
-    .month-summary{background:white;padding:15px;border-radius:6px;border:1px solid #e0e0e0;margin-bottom:15px}
-    .month-summary h3{color:#2c5aa0;margin-bottom:10px}
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:9999}
-    .modal-content{background:white;width:100%;max-width:560px;border-radius:10px;padding:18px;box-shadow:0 10px 40px rgba(0,0,0,.35);max-height:90vh;overflow-y:auto}
-    #loadingOverlay{position:fixed;inset:0;background:rgba(255,255,255,.93);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;gap:14px;font-size:1.1em;color:#2c5aa0}
-    .spinner{width:40px;height:40px;border:4px solid #ddd;border-top-color:#667eea;border-radius:50%;animation:spin .8s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    #configFirebase{background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:16px;border-radius:8px;margin:20px;font-size:.95em;line-height:1.6}
-    #configFirebase code{background:#fff;padding:2px 6px;border-radius:3px;font-family:monospace;font-size:.9em}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --pad: 20px; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: var(--pad);
+      -webkit-text-size-adjust: 100%;
+    }
+
+    @supports (padding: max(0px)) {
+      body {
+        padding-top: max(var(--pad), env(safe-area-inset-top));
+        padding-right: max(var(--pad), env(safe-area-inset-right));
+        padding-bottom: max(var(--pad), env(safe-area-inset-bottom));
+        padding-left: max(var(--pad), env(safe-area-inset-left));
+      }
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a3d5c 0%, #2c5aa0 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    header h1 { font-size: 2.5em; margin-bottom: 10px; }
+    header p { font-size: 1.1em; opacity: 0.9; }
+
+    .content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+      padding: 30px;
+    }
+
+    @media (max-width: 1200px) {
+      .content { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+      :root { --pad: 10px; }
+      header { padding: 18px; }
+      header h1 { font-size: 1.8em; }
+      header p { font-size: 1em; }
+      .content { padding: 15px; gap: 12px; }
+      .panel { padding: 14px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .tabs { flex-wrap: wrap; }
+      .tab-btn { padding: 10px 12px; flex: 1 1 auto; }
+      table { font-size: 0.8em; }
+      th, td { padding: 8px; }
+    }
+
+    .panel {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      border-left: 5px solid #667eea;
+      min-width: 0;
+    }
+
+    .panel h2 { color: #2c5aa0; margin-bottom: 15px; font-size: 1.4em; }
+
+    .form-group { margin-bottom: 15px; }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+      font-weight: 500;
+      font-size: 0.95em;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+    button:active { transform: translateY(0); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .stat-card h3 { color: #666; font-size: 0.85em; margin-bottom: 8px; text-transform: uppercase; }
+    .stat-card .value { font-size: 1.8em; font-weight: bold; color: #2c5aa0; }
+
+    .table-responsive {
+      overflow-x: auto;
+      margin-top: 15px;
+      -webkit-overflow-scrolling: touch;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+    thead { background: #2c5aa0; color: white; }
+    th { padding: 12px; text-align: left; font-weight: 600; }
+    td { padding: 10px; border-bottom: 1px solid #eee; }
+    tbody tr:hover { background: #f5f5f5; }
+
+    .delete-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.85em;
+      width: auto;
+      margin-top: 0;
+    }
+    .delete-btn:hover { background: #c82333; }
+
+    .full-width { grid-column: 1 / -1; }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #ddd;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.3s;
+      width: auto;
+      margin-top: 0;
+    }
+    .tab-btn.active { color: #667eea; border-bottom-color: #667eea; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95em;
+    }
+    .summary-row strong { color: #2c5aa0; }
+
+    .export-btn { background: #28a745; }
+    .export-btn:hover { background: #218838; }
+
+    .alert {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    .alert.error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+
+    .month-summary {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 15px;
+    }
+    .month-summary h3 { color: #2c5aa0; margin-bottom: 10px; }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 9999;
+    }
+
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 560px;
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
   </style>
 </head>
+
 <body>
-
-<div id="loadingOverlay"><div class="spinner"></div><span>Conectando con Firebase…</span></div>
-
-<!-- AVISO CONFIG (se oculta automaticamente cando Firebase está configurado) -->
-<div id="configFirebase" style="display:none">
-  ⚠️ <strong>Falta configurar Firebase.</strong> Abre este arquivo nun editor de texto e cambia as 6 liñas de configuración ao principio do script (busca "TU_API_KEY" etc.) polos valores do teu proxecto Firebase.
-</div>
-
 <div class="container">
   <header>
-    <div id="syncBar"><span id="syncDot"></span><span id="syncText">Conectando…</span></div>
     <h1>🐚 Xestor Amegrove</h1>
-    <div id="yearSelector">
-      <button onclick="cambiarAno(-1)">◀</button>
-      <select id="selectAno" onchange="setAno(parseInt(this.value))"></select>
-      <button onclick="cambiarAno(1)">▶</button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0 4px 0;">
+      <button type="button" onclick="cambiarAno(-1)" style="background:rgba(255,255,255,0.25);border:none;color:#fff;font-size:1.3em;width:34px;height:34px;border-radius:50%;cursor:pointer;line-height:1;">◄</button>
+      <span id="anoLabel" style="font-size:1.25em;font-weight:700;color:#fff;min-width:60px;text-align:center;">2026</span>
+      <button type="button" onclick="cambiarAno(1)" style="background:rgba(255,255,255,0.25);border:none;color:#fff;font-size:1.3em;width:34px;height:34px;border-radius:50%;cursor:pointer;line-height:1;">►</button>
     </div>
     <p>Sistema de Reparto e Ganancias Diarias - Cooperativa de Mexillón</p>
   </header>
+
   <div class="content">
+    <!-- Panel entrada -->
     <div class="panel">
       <h2>📊 Entrada de Datos Diarios</h2>
-      <div id="alert" class="alert" style="display:none"></div>
-      <div class="form-group"><label>Data da Venda</label><input type="date" id="data"></div>
-      <div class="form-group"><label>Batea</label>
-        <select id="batea"><option value="">Selecciona batea</option><option>GONDAR</option><option>CH3</option><option>VILLALONGA</option><option>ROSI</option><option>NOLI</option><option>CH4</option></select>
-      </div>
-      <div class="form-group"><label>Tipo de Mexillón</label>
-        <select id="tipo" onchange="actualizarEtiquetaCantidade()">
-          <option value="">Selecciona tipo</option>
-          <option value="EXTRA_F">EXTRA F</option><option value="EXTRA_R">EXTRA R</option>
-          <option value="GRANDE1_F">GRANDE 1 F</option><option value="GRANDE1_R">GRANDE 1 R</option>
-          <option value="GRANDE2_F">GRANDE 2 F</option><option value="GRANDE2_R">GRANDE 2 R</option>
-          <option value="NORMAL_F">NORMAL F</option><option value="NORMAL_R">NORMAL R</option>
-          <option value="EUROPEO_F">EUROPEO F</option><option value="EUROPEO_R">EUROPEO R</option>
-          <option value="LACAS_F">LACAS F</option><option value="LACAS_R">LACAS R</option>
-          <option value="BARCADA">BARCADA</option>
-        </select>
-      </div>
-      <div class="form-group"><label><span id="etiquetaCantidade">Cantidade (sacos de 10kg)</span></label><input type="number" id="cantidade" min="0" step="1"></div>
-      <div class="form-group"><label id="etiquetaPrezo">Prezo €/kg (automático)</label><input type="number" id="prezo" min="0" step="0.0001"></div>
-      <div id="avisoPorcentaxe" style="background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:10px;border-radius:4px;margin-bottom:10px;display:none;font-size:.9em">⚠️ Os porcentaxes deben sumar exactamente 100%</div>
-      <div class="form-group"><label>Volta</label><input type="text" id="volta" placeholder="ex: 1, 2, 3..."></div>
-      <div class="form-group" style="border:2px solid #667eea;padding:12px;border-radius:6px;background:#f0f4ff">
-        <label style="font-weight:600;margin-bottom:12px">Repartición entre Hermanos (%)</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div><label style="font-size:.9em">Juan Antonio</label><input type="number" id="porcentaxeJA" min="0" max="100" step="0.1" value="0"></div>
-          <div><label style="font-size:.9em">Jandro</label><input type="number" id="porcentaxeJandro" min="0" max="100" step="0.1" value="0"></div>
-          <div><label style="font-size:.9em">Jorge</label><input type="number" id="porcentaxeJorge" min="0" max="100" step="0.1" value="0"></div>
+      <div id="alert" class="alert" style="display:none;"></div>
+
+      <form id="entradaForm">
+        <div class="form-group">
+          <label for="data">Data da Venda</label>
+          <input type="date" id="data" required>
         </div>
-        <div style="font-size:.85em;color:#666;margin-top:8px;text-align:center">Total: <strong id="totalPorcentaxe">0</strong>% (debe ser 100%)</div>
-      </div>
-      <button id="btnVenda" onclick="engadirVenda()">➕ Engadir Venda</button>
-      <button onclick="limparFormVenda()" style="background:#6c757d">🔄 Limpar</button>
+
+        <div class="form-group">
+          <label for="batea">Batea</label>
+          <select id="batea" required>
+            <option value="">Selecciona batea</option>
+            <option value="GONDAR">GONDAR</option>
+            <option value="CH3">CH 3</option>
+            <option value="VILLALONGA">VILLALONGA</option>
+            <option value="ROSI">ROSI</option>
+            <option value="NOLI">NOLI</option>
+            <option value="CH4">CH 4</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="tipo">Tipo de Mexillón</label>
+          <select id="tipo" required onchange="actualizarEtiquetaCantidade()">
+            <option value="">Selecciona tipo</option>
+            <option value="EXTRA_F">EXTRA F</option>
+            <option value="EXTRA_R">EXTRA R</option>
+            <option value="GRANDE1_F">GRANDE 1 F</option>
+            <option value="GRANDE1_R">GRANDE 1 R</option>
+            <option value="GRANDE2_F">GRANDE 2 F</option>
+            <option value="GRANDE2_R">GRANDE 2 R</option>
+            <option value="NORMAL_F">NORMAL F</option>
+            <option value="NORMAL_R">NORMAL R</option>
+            <option value="EUROPEO_F">EUROPEO F</option>
+            <option value="EUROPEO_R">EUROPEO R</option>
+            <option value="LACAS_F">LACAS F</option>
+            <option value="LACAS_R">LACAS R</option>
+            <option value="BARCADA">BARCADA</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cantidade"><span id="etiquetaCantidade">Cantidade (sacos de 10kg)</span></label>
+          <input type="number" id="cantidade" min="0" step="1" required>
+        </div>
+
+        <div class="form-group">
+          <label for="prezo" id="etiquetaPrezo">Prezo €/kg</label>
+          <input type="number" id="prezo" min="0" step="0.0001" required>
+        </div>
+
+        <div id="avisoPorcentaxe" style="background:#fff3cd;border:1px solid #ffc107;color:#856404;padding:10px;border-radius:4px;margin-bottom:10px;display:none;font-size:0.9em;">
+          ⚠️ Os porcentaxes deben sumar exactamente 100%
+        </div>
+
+        <div class="form-group">
+          <label for="retencionPct">Retención IRPF % (normalmente 2% ou 0%)</label>
+          <input type="number" id="retencionPct" min="0" max="100" step="0.01" value="2" placeholder="2">
+        </div>
+
+        <div class="form-group">
+          <label for="volta">Volta</label>
+          <input type="text" id="volta" placeholder="ex: 1, 2, 3...">
+        </div>
+
+        <div class="form-group" style="border:2px solid #667eea;padding:12px;border-radius:6px;background:#f0f4ff;">
+          <label style="font-weight:600;margin-bottom:12px;">Repartición entre Hermanos (%)</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div>
+              <label style="font-size:0.9em;">Juan Antonio</label>
+              <input type="number" id="porcentaxeJA" min="0" max="100" step="0.1" value="0" required>
+            </div>
+            <div>
+              <label style="font-size:0.9em;">Jandro</label>
+              <input type="number" id="porcentaxeJandro" min="0" max="100" step="0.1" value="0" required>
+            </div>
+            <div>
+              <label style="font-size:0.9em;">Jorge</label>
+              <input type="number" id="porcentaxeJorge" min="0" max="100" step="0.1" value="0" required>
+            </div>
+          </div>
+          <div style="font-size:0.85em;color:#666;margin-top:8px;text-align:center;">
+            Total: <strong id="totalPorcentaxe">0</strong>% (debe ser 100%)
+          </div>
+        </div>
+
+        <button type="submit">➕ Engadir Venda</button>
+        <button type="reset" style="background:#6c757d;">🔄 Limpar</button>
+      </form>
     </div>
 
+    <!-- Panel stats -->
     <div class="panel">
-      <h2>📈 Resultados <span id="tituloAno">2026</span></h2>
+      <h2>📈 Resultados (Ganancias + Ingresos − Gastos) desde 1 Xaneiro <span id="tituloAnoStats">2026</span></h2>
+
       <div class="stats-grid">
-        <div class="stat-card"><h3>Juan Antonio</h3><div class="value" id="netoJA">0€</div><div style="font-size:.8em;color:#666;margin-top:6px">Gan.:<span id="gananciasJA">0€</span> Ing.:<span id="ingresosJA">0€</span> Gas.:<span id="gastosJA">0€</span></div><div style="font-size:.75em;color:#666;margin-top:5px">(<span id="porcentaxeNetoJA">0</span>% do neto)</div></div>
-        <div class="stat-card"><h3>Jandro</h3><div class="value" id="netoJandro">0€</div><div style="font-size:.8em;color:#666;margin-top:6px">Gan.:<span id="gananciasJandro">0€</span> Ing.:<span id="ingresosJandro">0€</span> Gas.:<span id="gastosJandro">0€</span></div><div style="font-size:.75em;color:#666;margin-top:5px">(<span id="porcentaxeNetoJandro">0</span>% do neto)</div></div>
-        <div class="stat-card"><h3>Jorge</h3><div class="value" id="netoJorge">0€</div><div style="font-size:.8em;color:#666;margin-top:6px">Gan.:<span id="gananciasJorge">0€</span> Ing.:<span id="ingresosJorge">0€</span> Gas.:<span id="gastosJorge">0€</span></div><div style="font-size:.75em;color:#666;margin-top:5px">(<span id="porcentaxeNetoJorge">0</span>% do neto)</div></div>
-        <div class="stat-card"><h3>Total Neto</h3><div class="value" id="totalNeto">0€</div><div style="font-size:.8em;color:#666;margin-top:6px">Gan.:<span id="totalGanancias">0€</span> Ing.:<span id="totalIngresos">0€</span> Gas.:<span id="totalGastos">0€</span></div></div>
+        <div class="stat-card">
+          <h3>Juan Antonio</h3>
+          <div class="value" id="netoJA">0€</div>
+          <div style="font-size:0.8em;color:#666;margin-top:6px;">
+            Gan.: <span id="gananciasJA">0€</span> | Ing.: <span id="ingresosJA">0€</span> | Gastos: <span id="gastosJA">0€</span>
+          </div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJA">0</span>% do neto)</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Jandro</h3>
+          <div class="value" id="netoJandro">0€</div>
+          <div style="font-size:0.8em;color:#666;margin-top:6px;">
+            Gan.: <span id="gananciasJandro">0€</span> | Ing.: <span id="ingresosJandro">0€</span> | Gastos: <span id="gastosJandro">0€</span>
+          </div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJandro">0</span>% do neto)</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Jorge</h3>
+          <div class="value" id="netoJorge">0€</div>
+          <div style="font-size:0.8em;color:#666;margin-top:6px;">
+            Gan.: <span id="gananciasJorge">0€</span> | Ing.: <span id="ingresosJorge">0€</span> | Gastos: <span id="gastosJorge">0€</span>
+          </div>
+          <div style="font-size:0.75em;color:#666;margin-top:5px;">(<span id="porcentaxeNetoJorge">0</span>% do neto)</div>
+        </div>
+
+        <div class="stat-card">
+          <h3>Total Neto</h3>
+          <div class="value" id="totalNeto">0€</div>
+          <div style="font-size:0.8em;color:#666;margin-top:6px;">
+            Gan. total: <span id="totalGanancias">0€</span> | Ing. total: <span id="totalIngresos">0€</span> | Gastos total: <span id="totalGastos">0€</span>
+          </div>
+        </div>
       </div>
-      <h3 style="color:#2c5aa0;margin:20px 0 10px 0">Repartición por Batea (filtro activo)</h3>
+
+      <h3 style="color:#2c5aa0;margin:20px 0 10px 0;">Repartición por Batea (segundo filtro de Diario)</h3>
       <div id="reparticionBatea"></div>
     </div>
 
+    <!-- Panel tabs -->
     <div class="panel full-width">
       <div class="tabs">
-        <button class="tab-btn active" onclick="mostrarTab('diario',event)">📅 Diario</button>
-        <button class="tab-btn" onclick="mostrarTab('gastos',event)">💸 Gastos</button>
-        <button class="tab-btn" onclick="mostrarTab('ingresos',event)">💰 Ingresos Extra</button>
-        <button class="tab-btn" onclick="mostrarTab('resumo',event)">📋 Resumo Mensual</button>
-        <button class="tab-btn" onclick="mostrarTab('config',event)">⚙️ Configuración</button>
+        <button class="tab-btn active" onclick="mostrarTab('diario', event)">📅 Diario</button>
+        <button class="tab-btn" onclick="mostrarTab('gastos', event)">💸 Gastos</button>
+        <button class="tab-btn" onclick="mostrarTab('ingresos', event)">💰 Ingresos Extra</button>
+        <button class="tab-btn" onclick="mostrarTab('resumo', event)">📋 Resumo Mensual</button>
+        <button class="tab-btn" onclick="mostrarTab('config', event)">⚙️ Configuración</button>
       </div>
 
+      <!-- Diario -->
       <div id="diario" class="tab-content active">
         <h2>📝 Vendas rexistradas</h2>
-        <div class="form-group" style="margin-top:10px"><label>Ver vendas do día</label><input type="date" id="filtroData">
-          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-            <button type="button" style="width:auto;background:#6c757d;padding:10px 14px" onclick="verHoxe()">Hoxe</button>
-            <button type="button" style="width:auto;background:#0d6efd;padding:10px 14px" onclick="verTodas()">Todas</button>
+        <div class="form-group" style="margin-top:10px;">
+          <label for="filtroData">Ver vendas do día</label>
+          <input type="date" id="filtroData">
+          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+            <button type="button" style="width:auto;background:#6c757d;padding:10px 14px;" onclick="verHoxe()">Hoxe</button>
+            <button type="button" style="width:auto;background:#0d6efd;padding:10px 14px;" onclick="verTodas()">Todas</button>
           </div>
         </div>
-        <div class="table-responsive"><table>
-          <thead><tr><th>Data</th><th>Batea</th><th>Tipo</th><th>Sacos</th><th>Quilos</th><th>Prezo €/kg</th><th>Ganancia €</th><th>J.Antonio %</th><th>Jandro %</th><th>Jorge %</th><th>Volta</th><th>Acción</th></tr></thead>
-          <tbody id="listadoVendas"><tr><td colspan="12" style="text-align:center;color:#999">Cargando…</td></tr></tbody>
-        </table></div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th><th>Batea</th><th>Tipo</th><th>Sacos</th><th>Quilos</th>
+                <th>Prezo €/kg</th><th>Ganancia €</th><th>Retención %</th>
+                <th>J. Antonio %</th><th>Jandro %</th><th>Jorge %</th><th>Volta</th><th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="listadoVendas">
+              <tr><td colspan="13" style="text-align:center;color:#999;">Sen datos</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
+      <!-- Gastos -->
       <div id="gastos" class="tab-content">
         <h2>💸 Gastos por hermano</h2>
-        <div id="alertGastos" class="alert" style="display:none"></div>
-        <div class="form-group"><label>Data do gasto</label><input type="date" id="gastoData"></div>
-        <div class="form-group"><label>Hermano</label><select id="gastoHermano"><option value="JA">Juan Antonio</option><option value="Jandro">Jandro</option><option value="Jorge">Jorge</option></select></div>
-        <div class="form-group"><label>Importe (€)</label><input type="number" id="gastoImporte" min="0" step="0.01"></div>
-        <div class="form-group"><label>Concepto (opcional)</label><input type="text" id="gastoConcepto" placeholder="Gasolina, reparación, peaxes..."></div>
-        <button id="btnGasto" onclick="engadirGasto()" style="background:#fd7e14">➕ Engadir gasto</button>
-        <div class="form-group" style="margin-top:18px"><label>Ver gastos do día</label><input type="date" id="filtroDataGastos">
-          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-            <button type="button" style="width:auto;background:#6c757d;padding:10px 14px" onclick="verGastosHoxe()">Hoxe</button>
-            <button type="button" style="width:auto;background:#0d6efd;padding:10px 14px" onclick="verGastosTodos()">Todas</button>
+        <div id="alertGastos" class="alert" style="display:none;"></div>
+        <form id="gastoForm" style="margin-top:10px;">
+          <div class="form-group">
+            <label for="gastoData">Data do gasto</label>
+            <input type="date" id="gastoData" required>
+          </div>
+          <div class="form-group">
+            <label for="gastoHermano">Hermano</label>
+            <select id="gastoHermano" required>
+              <option value="JA">Juan Antonio</option>
+              <option value="Jandro">Jandro</option>
+              <option value="Jorge">Jorge</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="gastoImporte">Importe (€)</label>
+            <input type="number" id="gastoImporte" min="0" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="gastoConcepto">Concepto (opcional)</label>
+            <input type="text" id="gastoConcepto" placeholder="Gasolina, reparación, peaxes...">
+          </div>
+          <button type="submit" style="background:#fd7e14;">➕ Engadir gasto</button>
+        </form>
+        <div class="form-group" style="margin-top:18px;">
+          <label for="filtroDataGastos">Ver gastos do día</label>
+          <input type="date" id="filtroDataGastos">
+          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+            <button type="button" style="width:auto;background:#6c757d;padding:10px 14px;" onclick="verGastosHoxe()">Hoxe</button>
+            <button type="button" style="width:auto;background:#0d6efd;padding:10px 14px;" onclick="verGastosTodos()">Todas</button>
           </div>
         </div>
-        <div class="table-responsive"><table>
-          <thead><tr><th>Data</th><th>Hermano</th><th>Importe</th><th>Concepto</th><th>Acción</th></tr></thead>
-          <tbody id="listadoGastos"><tr><td colspan="5" style="text-align:center;color:#999">Cargando…</td></tr></tbody>
-        </table></div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Data</th><th>Hermano</th><th>Importe</th><th>Concepto</th><th>Acción</th></tr>
+            </thead>
+            <tbody id="listadoGastos">
+              <tr><td colspan="5" style="text-align:center;color:#999;">Sen datos</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
+      <!-- Ingresos Extra -->
       <div id="ingresos" class="tab-content">
         <h2>💰 Ingresos Extraordinarios por hermano</h2>
-        <div id="alertIngresos" class="alert" style="display:none"></div>
-        <div class="form-group"><label>Data do ingreso</label><input type="date" id="ingresoData"></div>
-        <div class="form-group"><label>Hermano</label><select id="ingresoHermano"><option value="JA">Juan Antonio</option><option value="Jandro">Jandro</option><option value="Jorge">Jorge</option></select></div>
-        <div class="form-group"><label>Importe (€)</label><input type="number" id="ingresoImporte" min="0" step="0.01"></div>
-        <div class="form-group"><label>Concepto (opcional)</label><input type="text" id="ingresoConcepto" placeholder="Venda de material, subvención..."></div>
-        <button id="btnIngreso" onclick="engadirIngreso()" style="background:#28a745">➕ Engadir ingreso extra</button>
-        <div class="form-group" style="margin-top:18px"><label>Ver ingresos do día</label><input type="date" id="filtroDataIngresos">
-          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-            <button type="button" style="width:auto;background:#6c757d;padding:10px 14px" onclick="verIngresosHoxe()">Hoxe</button>
-            <button type="button" style="width:auto;background:#0d6efd;padding:10px 14px" onclick="verIngresosTodos()">Todas</button>
+        <div id="alertIngresos" class="alert" style="display:none;"></div>
+        <form id="ingresoForm" style="margin-top:10px;">
+          <div class="form-group">
+            <label for="ingresoData">Data do ingreso</label>
+            <input type="date" id="ingresoData" required>
+          </div>
+          <div class="form-group">
+            <label for="ingresoHermano">Hermano</label>
+            <select id="ingresoHermano" required>
+              <option value="JA">Juan Antonio</option>
+              <option value="Jandro">Jandro</option>
+              <option value="Jorge">Jorge</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="ingresoImporte">Importe (€)</label>
+            <input type="number" id="ingresoImporte" min="0" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label for="ingresoConcepto">Concepto (opcional)</label>
+            <input type="text" id="ingresoConcepto" placeholder="Venda de material, subvención...">
+          </div>
+          <button type="submit" style="background:#28a745;">➕ Engadir ingreso extra</button>
+        </form>
+        <div class="form-group" style="margin-top:18px;">
+          <label for="filtroDataIngresos">Ver ingresos do día</label>
+          <input type="date" id="filtroDataIngresos">
+          <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+            <button type="button" style="width:auto;background:#6c757d;padding:10px 14px;" onclick="verIngresosHoxe()">Hoxe</button>
+            <button type="button" style="width:auto;background:#0d6efd;padding:10px 14px;" onclick="verIngresosTodos()">Todas</button>
           </div>
         </div>
-        <div class="table-responsive"><table>
-          <thead><tr><th>Data</th><th>Hermano</th><th>Importe</th><th>Concepto</th><th>Acción</th></tr></thead>
-          <tbody id="listadoIngresos"><tr><td colspan="5" style="text-align:center;color:#999">Cargando…</td></tr></tbody>
-        </table></div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Data</th><th>Hermano</th><th>Importe</th><th>Concepto</th><th>Acción</th></tr>
+            </thead>
+            <tbody id="listadoIngresos">
+              <tr><td colspan="5" style="text-align:center;color:#999;">Sen datos</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
+      <!-- Resumo -->
       <div id="resumo" class="tab-content">
         <h2>📊 Resumo de Vendas por Mes</h2>
         <div id="resumoMensual"></div>
       </div>
 
+      <!-- Config -->
       <div id="config" class="tab-content">
         <h2>⚙️ Configuración de Precos Estándar (2026)</h2>
-        <div class="form-group" style="margin-top:20px">
-          <div style="background:white;padding:15px;border-radius:6px">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px">
+        <div class="form-group" style="margin-top:20px;">
+          <label>Precos de Referencia por Tipo</label>
+          <div style="background:white;padding:15px;border-radius:6px;margin-top:10px;">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
               <div><label>EXTRA F €/kg</label><input type="number" id="precioEXTRA_F" step="0.01" value="1.90"></div>
               <div><label>EXTRA R €/kg</label><input type="number" id="precioEXTRA_R" step="0.01" value="1.90"></div>
               <div><label>GRANDE 1 F €/kg</label><input type="number" id="precioGRANDE1_F" step="0.01" value="1.40"></div>
@@ -227,16 +561,20 @@
               <div><label>LACAS F €/kg</label><input type="number" id="precioLACAS_F" step="0.01" value="0.60"></div>
               <div><label>LACAS R €/kg</label><input type="number" id="precioLACAS_R" step="0.01" value="0.60"></div>
             </div>
-            <button onclick="gardarPrecos()" style="margin-top:15px">💾 Gardar Precos</button>
-            <button onclick="restablecerPrezos()" style="margin-top:10px;background:#0d6efd">♻️ Restablecer prezos 2026</button>
+            <button type="button" onclick="guardarPrecios()" style="margin-top:15px;">💾 Gardar Precos</button>
+            <button type="button" onclick="restablecerPrezos2026()" style="margin-top:10px;background:#0d6efd;">♻️ Restablecer prezos 2026</button>
           </div>
         </div>
-        <div class="form-group" style="margin-top:20px">
-          <button class="export-btn" onclick="exportarExcel()">📥 Descargar Excel (XLSX)</button>
-          <button style="background:#0d6efd;margin-top:10px" onclick="exportarJSON()">🧾 Exportar copia (JSON)</button>
-          <button style="background:#6f42c1;margin-top:10px" onclick="document.getElementById('importJsonFile').click()">📤 Importar copia (JSON)</button>
-          <input id="importJsonFile" type="file" accept="application/json" style="display:none" onchange="importarJSON(this)">
-          <button style="background:#fd7e14;margin-top:10px" onclick="limpiarTodos()">🗑️ Limpar Todos os Datos</button>
+
+        <div class="form-group" style="margin-top:20px;">
+          <label>Opcións de Datos</label>
+          <button type="button" class="export-btn" onclick="exportarExcel()" style="margin-top:10px;">📥 Descargar Excel completo (XLSX)</button>
+          <button type="button" style="background:#17a2b8;margin-top:10px;" onclick="exportarExcelHacienda()">🧾 Descargar Excel Hacienda (Modelo 131)</button>
+          <button type="button" style="background:#0d6efd;margin-top:10px;" onclick="exportarCopiaJSON()">🧾 Exportar copia de seguridade (JSON)</button>
+          <button type="button" style="background:#6f42c1;margin-top:10px;" onclick="abrirImportJSON()">📤 Importar copia (JSON)</button>
+          <input id="importJsonFile" type="file" accept="application/json" style="display:none;">
+          <button type="button" style="background:#0d6efd;margin-top:10px;" onclick="diagnosticoURL()">🔎 Diagnóstico URL</button>
+          <button type="button" style="background:#fd7e14;margin-top:10px;" onclick="limpiarTodos()">🗑️ Limpar Todos os Datos</button>
         </div>
       </div>
     </div>
@@ -244,657 +582,1161 @@
 </div>
 
 <!-- Modal editar venda -->
-<div id="modalEditar" class="modal" style="display:none"><div class="modal-content">
-  <h2 style="color:#2c5aa0;margin-bottom:12px">✏️ Editar venda</h2>
-  <div id="alertEditar" class="alert error" style="display:none"></div>
-  <input type="hidden" id="editId">
-  <div class="form-group"><label>Data</label><input type="date" id="editData"></div>
-  <div class="form-group"><label>Batea</label><select id="editBatea"><option>GONDAR</option><option>CH3</option><option>VILLALONGA</option><option>ROSI</option><option>NOLI</option><option>CH4</option></select></div>
-  <div class="form-group"><label>Tipo</label><select id="editTipo" onchange="actualizarEtiquetaEditar()"><option value="EXTRA_F">EXTRA F</option><option value="EXTRA_R">EXTRA R</option><option value="GRANDE1_F">GRANDE 1 F</option><option value="GRANDE1_R">GRANDE 1 R</option><option value="GRANDE2_F">GRANDE 2 F</option><option value="GRANDE2_R">GRANDE 2 R</option><option value="NORMAL_F">NORMAL F</option><option value="NORMAL_R">NORMAL R</option><option value="EUROPEO_F">EUROPEO F</option><option value="EUROPEO_R">EUROPEO R</option><option value="LACAS_F">LACAS F</option><option value="LACAS_R">LACAS R</option><option value="BARCADA">BARCADA</option></select></div>
-  <div class="form-group"><label><span id="editEtiquetaCantidade">Cantidade (sacos de 10kg)</span></label><input type="number" id="editCantidade" min="0" step="1"></div>
-  <div class="form-group"><label>Prezo €/kg (baleiro = automático)</label><input type="number" id="editPrezo" min="0" step="0.0001" placeholder="Ex: 1.40"></div>
-  <div class="form-group"><label>Volta</label><input type="text" id="editVolta"></div>
-  <div class="form-group" style="border:2px solid #667eea;padding:12px;border-radius:6px;background:#f0f4ff">
-    <label style="font-weight:600;margin-bottom:12px">Repartición (%)</label>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-      <div><label style="font-size:.9em">Juan Antonio</label><input type="number" id="editPorcentaxeJA" min="0" max="100" step="0.1"></div>
-      <div><label style="font-size:.9em">Jandro</label><input type="number" id="editPorcentaxeJandro" min="0" max="100" step="0.1"></div>
-      <div><label style="font-size:.9em">Jorge</label><input type="number" id="editPorcentaxeJorge" min="0" max="100" step="0.1"></div>
+<div id="modalEditar" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h2 style="color:#2c5aa0;margin-bottom:12px;">✏️ Editar venda</h2>
+    <div id="alertEditar" class="alert error" style="display:none;"></div>
+    <input type="hidden" id="editId">
+    <div class="form-group"><label for="editData">Data</label><input type="date" id="editData" required></div>
+    <div class="form-group">
+      <label for="editBatea">Batea</label>
+      <select id="editBatea" required>
+        <option value="GONDAR">GONDAR</option><option value="CH3">CH 3</option>
+        <option value="VILLALONGA">VILLALONGA</option><option value="ROSI">ROSI</option>
+        <option value="NOLI">NOLI</option><option value="CH4">CH 4</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="editTipo">Tipo</label>
+      <select id="editTipo" required onchange="actualizarEtiquetaCantidadeEditar()">
+        <option value="EXTRA_F">EXTRA F</option><option value="EXTRA_R">EXTRA R</option>
+        <option value="GRANDE1_F">GRANDE 1 F</option><option value="GRANDE1_R">GRANDE 1 R</option>
+        <option value="GRANDE2_F">GRANDE 2 F</option><option value="GRANDE2_R">GRANDE 2 R</option>
+        <option value="NORMAL_F">NORMAL F</option><option value="NORMAL_R">NORMAL R</option>
+        <option value="EUROPEO_F">EUROPEO F</option><option value="EUROPEO_R">EUROPEO R</option>
+        <option value="LACAS_F">LACAS F</option><option value="LACAS_R">LACAS R</option>
+        <option value="BARCADA">BARCADA</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="editCantidade"><span id="editEtiquetaCantidade">Cantidade (sacos de 10kg)</span></label>
+      <input type="number" id="editCantidade" min="0" step="1" required>
+    </div>
+    <div class="form-group">
+      <label for="editPrezo">Prezo €/kg (baleiro = automático)</label>
+      <input type="number" id="editPrezo" min="0" step="0.0001" placeholder="Ex: 1.40">
+    </div>
+    <div class="form-group">
+      <label for="editRetencionPct">Retención IRPF %</label>
+      <input type="number" id="editRetencionPct" min="0" max="100" step="0.01" value="2">
+    </div>
+    <div class="form-group"><label for="editVolta">Volta</label><input type="text" id="editVolta" placeholder="ex: 1, 2, 3..."></div>
+    <div class="form-group" style="border:2px solid #667eea;padding:12px;border-radius:6px;background:#f0f4ff;">
+      <label style="font-weight:600;margin-bottom:12px;">Repartición entre Hermanos (%)</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div><label style="font-size:0.9em;">Juan Antonio</label><input type="number" id="editPorcentaxeJA" min="0" max="100" step="0.1" required></div>
+        <div><label style="font-size:0.9em;">Jandro</label><input type="number" id="editPorcentaxeJandro" min="0" max="100" step="0.1" required></div>
+        <div><label style="font-size:0.9em;">Jorge</label><input type="number" id="editPorcentaxeJorge" min="0" max="100" step="0.1" required></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button type="button" style="width:auto;padding:12px 16px;" onclick="gardarEdicion()">💾 Gardar cambios</button>
+      <button type="button" style="width:auto;padding:12px 16px;background:#6c757d;" onclick="pecharModalEditar()">Cancelar</button>
     </div>
   </div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-    <button type="button" style="width:auto;padding:12px 16px" onclick="gardarEdicion()">💾 Gardar cambios</button>
-    <button type="button" style="width:auto;padding:12px 16px;background:#6c757d" onclick="pecharModal('modalEditar')">Cancelar</button>
-  </div>
-</div></div>
+</div>
 
 <!-- Modal editar gasto -->
-<div id="modalEditarGasto" class="modal" style="display:none"><div class="modal-content">
-  <h2 style="color:#2c5aa0;margin-bottom:12px">✏️ Editar gasto</h2>
-  <div id="alertEditarGasto" class="alert error" style="display:none"></div>
-  <input type="hidden" id="editGastoId">
-  <div class="form-group"><label>Data</label><input type="date" id="editGastoData"></div>
-  <div class="form-group"><label>Hermano</label><select id="editGastoHermano"><option value="JA">Juan Antonio</option><option value="Jandro">Jandro</option><option value="Jorge">Jorge</option></select></div>
-  <div class="form-group"><label>Importe (€)</label><input type="number" id="editGastoImporte" min="0" step="0.01"></div>
-  <div class="form-group"><label>Concepto</label><input type="text" id="editGastoConcepto"></div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-    <button type="button" style="width:auto;padding:12px 16px" onclick="gardarEdicionGasto()">💾 Gardar cambios</button>
-    <button type="button" style="width:auto;padding:12px 16px;background:#6c757d" onclick="pecharModal('modalEditarGasto')">Cancelar</button>
+<div id="modalEditarGasto" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h2 style="color:#2c5aa0;margin-bottom:12px;">✏️ Editar gasto</h2>
+    <div id="alertEditarGasto" class="alert error" style="display:none;"></div>
+    <input type="hidden" id="editGastoId">
+    <div class="form-group"><label for="editGastoData">Data</label><input type="date" id="editGastoData" required></div>
+    <div class="form-group">
+      <label for="editGastoHermano">Hermano</label>
+      <select id="editGastoHermano" required>
+        <option value="JA">Juan Antonio</option><option value="Jandro">Jandro</option><option value="Jorge">Jorge</option>
+      </select>
+    </div>
+    <div class="form-group"><label for="editGastoImporte">Importe (€)</label><input type="number" id="editGastoImporte" min="0" step="0.01" required></div>
+    <div class="form-group"><label for="editGastoConcepto">Concepto (opcional)</label><input type="text" id="editGastoConcepto"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button type="button" style="width:auto;padding:12px 16px;" onclick="gardarEdicionGasto()">💾 Gardar cambios</button>
+      <button type="button" style="width:auto;padding:12px 16px;background:#6c757d;" onclick="pecharModalEditarGasto()">Cancelar</button>
+    </div>
   </div>
-</div></div>
+</div>
 
 <!-- Modal editar ingreso -->
-<div id="modalEditarIngreso" class="modal" style="display:none"><div class="modal-content">
-  <h2 style="color:#2c5aa0;margin-bottom:12px">✏️ Editar ingreso extra</h2>
-  <div id="alertEditarIngreso" class="alert error" style="display:none"></div>
-  <input type="hidden" id="editIngresoId">
-  <div class="form-group"><label>Data</label><input type="date" id="editIngresoData"></div>
-  <div class="form-group"><label>Hermano</label><select id="editIngresoHermano"><option value="JA">Juan Antonio</option><option value="Jandro">Jandro</option><option value="Jorge">Jorge</option></select></div>
-  <div class="form-group"><label>Importe (€)</label><input type="number" id="editIngresoImporte" min="0" step="0.01"></div>
-  <div class="form-group"><label>Concepto</label><input type="text" id="editIngresoConcepto"></div>
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-    <button type="button" style="width:auto;padding:12px 16px" onclick="gardarEdicionIngreso()">💾 Gardar cambios</button>
-    <button type="button" style="width:auto;padding:12px 16px;background:#6c757d" onclick="pecharModal('modalEditarIngreso')">Cancelar</button>
+<div id="modalEditarIngreso" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h2 style="color:#2c5aa0;margin-bottom:12px;">✏️ Editar ingreso extra</h2>
+    <div id="alertEditarIngreso" class="alert error" style="display:none;"></div>
+    <input type="hidden" id="editIngresoId">
+    <div class="form-group"><label for="editIngresoData">Data</label><input type="date" id="editIngresoData" required></div>
+    <div class="form-group">
+      <label for="editIngresoHermano">Hermano</label>
+      <select id="editIngresoHermano" required>
+        <option value="JA">Juan Antonio</option><option value="Jandro">Jandro</option><option value="Jorge">Jorge</option>
+      </select>
+    </div>
+    <div class="form-group"><label for="editIngresoImporte">Importe (€)</label><input type="number" id="editIngresoImporte" min="0" step="0.01" required></div>
+    <div class="form-group"><label for="editIngresoConcepto">Concepto (opcional)</label><input type="text" id="editIngresoConcepto"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+      <button type="button" style="width:auto;padding:12px 16px;" onclick="gardarEdicionIngreso()">💾 Gardar cambios</button>
+      <button type="button" style="width:auto;padding:12px 16px;background:#6c757d;" onclick="pecharModalEditarIngreso()">Cancelar</button>
+    </div>
   </div>
-</div></div>
+</div>
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 
-<!-- Firebase SDK -->
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getDatabase, ref, set, get, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+<script>
+// =============================================
+//  CONSTANTES E CONFIGURACIÓN
+// =============================================
+const PREZOS_VERSION     = '2026';
+const PREZOS_VERSION_KEY = 'precos_amegrove_version';
+const CALC_VERSION       = 1;
+const COOP_PCT           = 0.065;
+const IVA_PCT            = 0.105;
+
+const PREZOS_2026 = {
+  'EXTRA_F':0, 'EXTRA_R':0,
+  'GRANDE1_F':0, 'GRANDE1_R':0,
+  'GRANDE2_F':0, 'GRANDE2_R':0,
+  'NORMAL_F':0, 'NORMAL_R':0,
+  'EUROPEO_F':0, 'EUROPEO_R':0,
+  'LACAS_F':0, 'LACAS_R':0,
+  'BARCADA':0
+};
 
 // =============================================
-// CONFIGURACIÓN FIREBASE
-// Substitúe estes valores polos do teu proxecto
+//  ESTADO GLOBAL
 // =============================================
-const firebaseConfig = {
-  apiKey: "AIzaSyDNrzDE5Ze98LP7GHv-bZajXtS2w4jmqdw",
-  authDomain: "amegrove2026.firebaseapp.com",
-  databaseURL: "https://amegrove2026-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "amegrove2026",
-  storageBucket: "amegrove2026.firebasestorage.app",
-  messagingSenderId: "979651792142",
-  appId: "1:979651792142:web:f75da7aee12da02834db5f"
-};// =============================================
+let vendas        = [];
+let gastos        = [];
+let ingresosExtra = [];
+let precos        = { ...PREZOS_2026 };
+let anoActivo     = new Date().getFullYear();
 
-const COOP_PCT=0.065,IVA_PCT=0.105,CALC_VERSION=1;
-const PREZOS_2026={EXTRA_F:1.9,EXTRA_R:1.9,GRANDE1_F:1.4,GRANDE1_R:1.4,GRANDE2_F:1.2,GRANDE2_R:1.2,NORMAL_F:1,NORMAL_R:1,EUROPEO_F:.8,EUROPEO_R:.8,LACAS_F:.6,LACAS_R:.6,BARCADA:0};
-
-let vendas=[],gastos=[],ingresosExtra=[],precos={...PREZOS_2026};
-let anoActivo=String(new Date().getFullYear());
-let filtroData=hoxe(),verTodasAsVendas=false;
-let filtroDataGastos=hoxe(),verTodosOsGastos=false;
-let filtroDataIngresos=hoxe(),verTodosOsIngresos=false;
-let db;
-
-function hoxe(){return new Date().toISOString().split('T')[0];}
-function nom(h){return h==='JA'?'Juan Antonio':h;}
-function calc(q,p){const b=q*p,c=b*COOP_PCT,ba=b-c,iv=ba*IVA_PCT;return{bruto:b,coop:c,base:ba,iva:iv,total:ba+iv};}
-function setSync(s,t){const d=document.getElementById('syncDot'),x=document.getElementById('syncText');if(d)d.className=s;if(x)x.textContent=t;}
-function alerta(m,t='success'){const el=document.getElementById('alert');el.textContent=m;el.className='alert'+(t==='error'?' error':'');el.style.display='block';setTimeout(()=>el.style.display='none',3500);}
-function alertaG(m,t='success'){const el=document.getElementById('alertGastos');el.textContent=m;el.className='alert'+(t==='error'?' error':'');el.style.display='block';setTimeout(()=>el.style.display='none',3000);}
-function alertaI(m,t='success'){const el=document.getElementById('alertIngresos');el.textContent=m;el.className='alert'+(t==='error'?' error':'');el.style.display='block';setTimeout(()=>el.style.display='none',3000);}
-function alertaModal(id,m){const el=document.getElementById(id);el.textContent=m;el.style.display='block';}
-
-// =============================================
-// FIREBASE: GARDAR E CARGAR
-// =============================================
-async function fbSet(path, data) {
-  await set(ref(db, path), data);
+function cambiarAno(delta) {
+  anoActivo += delta;
+  document.getElementById('anoLabel').textContent = anoActivo;
+  const tit = document.getElementById('tituloAnoStats');
+  if (tit) tit.textContent = anoActivo;
+  actualizarEstadisticas();
+  actualizarReparticion();
+  actualizarListadoVendas();
+  actualizarListadoGastos();
+  actualizarListadoIngresos();
 }
 
-async function fbGet(path) {
-  const snap = await get(ref(db, path));
-  return snap.exists() ? snap.val() : null;
+let filtroData          = new Date().toISOString().split('T')[0];
+let verTodasAsVendas    = false;
+let filtroDataGastos    = new Date().toISOString().split('T')[0];
+let verTodosOsGastos    = false;
+let filtroDataIngresos  = new Date().toISOString().split('T')[0];
+let verTodosOsIngresos  = false;
+
+// =============================================
+//  CÁLCULOS
+// =============================================
+function calcularImportesVenda(quilos, prezoKg) {
+  const bruto = quilos * prezoKg;
+  const coop  = bruto * COOP_PCT;
+  const base  = bruto - coop;
+  const iva   = base * IVA_PCT;
+  const total = base + iva;
+  return { bruto, coop, base, iva, total };
 }
 
-async function gardarTodo() {
-  setSync('syncing','Gardando…');
-  try {
-    await fbSet('amegrove/vendas', vendas.length ? Object.fromEntries(vendas.map(v=>[String(v.id),v])) : null);
-    await fbSet('amegrove/gastos', gastos.length ? Object.fromEntries(gastos.map(g=>[String(g.id),g])) : null);
-    await fbSet('amegrove/ingresos', ingresosExtra.length ? Object.fromEntries(ingresosExtra.map(i=>[String(i.id),i])) : null);
-    await fbSet('amegrove/precos', precos);
-    setSync('ok','Gardado · '+new Date().toLocaleTimeString('gl-ES'));
-  } catch(e) {
-    setSync('error','Erro ao gardar: '+e.message);
-    console.error(e);
+// =============================================
+//  PERSISTENCIA
+// =============================================
+function gardarDatos() {
+  localStorage.setItem('vendas_amegrove',   JSON.stringify(vendas));
+  localStorage.setItem('gastos_amegrove',   JSON.stringify(gastos));
+  localStorage.setItem('ingresos_amegrove', JSON.stringify(ingresosExtra));
+  localStorage.setItem('precos_amegrove',   JSON.stringify(precos));
+  localStorage.setItem(PREZOS_VERSION_KEY,  PREZOS_VERSION);
+}
+// Alias para compatibilidad con código anterior
+const guardarDatos = gardarDatos;
+
+function migrarVendasSeFaiFalta() {
+  let cambiou = false;
+  vendas = (vendas || []).map(v => {
+    if (!v) return v;
+    const ok = v.calcVersion === CALC_VERSION && typeof v.ganancia === 'number';
+    if (ok) return v;
+    const imp = calcularImportesVenda(Number(v.quilos||0), Number(v.prezo||0));
+    cambiou = true;
+    return { ...v, bruto: imp.bruto, coop: imp.coop, base: imp.base, iva: imp.iva, ganancia: imp.total, calcVersion: CALC_VERSION };
+  });
+  if (cambiou) gardarDatos();
+}
+
+function cargarDatos() {
+  const dv = localStorage.getItem('vendas_amegrove');
+  const dg = localStorage.getItem('gastos_amegrove');
+  const di = localStorage.getItem('ingresos_amegrove');
+  const dp = localStorage.getItem('precos_amegrove');
+  const vv = localStorage.getItem(PREZOS_VERSION_KEY);
+
+  if (dv) vendas        = JSON.parse(dv);
+  if (dg) gastos        = JSON.parse(dg);
+  if (di) ingresosExtra = JSON.parse(di);
+
+  migrarVendasSeFaiFalta();
+
+  if (dp && vv === PREZOS_VERSION) {
+    precos = JSON.parse(dp);
+  } else {
+    const p2 = {
+      'EXTRA_F':1.90,'EXTRA_R':1.90,'GRANDE1_F':1.40,'GRANDE1_R':1.40,
+      'GRANDE2_F':1.20,'GRANDE2_R':1.20,'NORMAL_F':1.00,'NORMAL_R':1.00,
+      'EUROPEO_F':0.80,'EUROPEO_R':0.80,'LACAS_F':0.60,'LACAS_R':0.60,'BARCADA':0
+    };
+    precos = p2;
+    localStorage.setItem('precos_amegrove', JSON.stringify(precos));
+    localStorage.setItem(PREZOS_VERSION_KEY, PREZOS_VERSION);
   }
+
+  // Inicializar fechas
+  document.getElementById('data').valueAsDate         = new Date();
+  document.getElementById('gastoData').valueAsDate    = new Date();
+  document.getElementById('ingresoData').valueAsDate  = new Date();
+
+  const fv = document.getElementById('filtroData');
+  if (fv) { fv.value = filtroData; fv.addEventListener('change', e => { filtroData = e.target.value; verTodasAsVendas = false; actualizarListado(); actualizarReparticion(); }); }
+
+  const fg = document.getElementById('filtroDataGastos');
+  if (fg) { fg.value = filtroDataGastos; fg.addEventListener('change', e => { filtroDataGastos = e.target.value; verTodosOsGastos = false; actualizarListadoGastos(); }); }
+
+  const fi = document.getElementById('filtroDataIngresos');
+  if (fi) { fi.value = filtroDataIngresos; fi.addEventListener('change', e => { filtroDataIngresos = e.target.value; verTodosOsIngresos = false; actualizarListadoIngresos(); }); }
+
+  actualizarEtiquetaCantidade();
+  actualizarTotalPorcentaxe();
+  actualizarFormulario();
+  actualizarFormPrecos();
+
+  verHoxe(); verGastosHoxe(); verIngresosHoxe();
 }
 
-async function cargarTodo() {
-  setSync('syncing','Cargando…');
-  try {
-    const data = await fbGet('amegrove');
-    if (data) {
-      vendas        = data.vendas   ? Object.values(data.vendas)   : [];
-      gastos        = data.gastos   ? Object.values(data.gastos)   : [];
-      ingresosExtra = data.ingresos ? Object.values(data.ingresos) : [];
-      precos        = data.precos && Object.keys(data.precos).length ? data.precos : {...PREZOS_2026};
-    }
-    actualizarUI();
-    actualizarPrezosForm();
-    setSync('ok','Sincronizado · '+new Date().toLocaleTimeString('gl-ES'));
-  } catch(e) {
-    setSync('error','Erro: '+e.message);
-    console.error(e);
-  }
-  document.getElementById('loadingOverlay').style.display='none';
-}
-
-// Listener en tempo real — actualiza automaticamente cando outro hermano cambia datos
-function activarListenerTiempoReal() {
-  onValue(ref(db, 'amegrove'), (snap) => {
-    const data = snap.val();
-    if (data) {
-      vendas        = data.vendas   ? Object.values(data.vendas)   : [];
-      gastos        = data.gastos   ? Object.values(data.gastos)   : [];
-      ingresosExtra = data.ingresos ? Object.values(data.ingresos) : [];
-      precos        = data.precos && Object.keys(data.precos).length ? data.precos : {...PREZOS_2026};
-      actualizarUI();
-      actualizarPrezosForm();
-      setSync('ok','Sincronizado · '+new Date().toLocaleTimeString('gl-ES'));
-    }
-    document.getElementById('loadingOverlay').style.display='none';
+// =============================================
+//  FORMULARIO PREÇOS
+// =============================================
+function actualizarFormPrecos() {
+  const mapa = {
+    'EXTRA_F':'precioEXTRA_F','EXTRA_R':'precioEXTRA_R',
+    'GRANDE1_F':'precioGRANDE1_F','GRANDE1_R':'precioGRANDE1_R',
+    'GRANDE2_F':'precioGRANDE2_F','GRANDE2_R':'precioGRANDE2_R',
+    'NORMAL_F':'precioNORMAL_F','NORMAL_R':'precioNORMAL_R',
+    'EUROPEO_F':'precioEUROPEO_F','EUROPEO_R':'precioEUROPEO_R',
+    'LACAS_F':'precioLACAS_F','LACAS_R':'precioLACAS_R'
+  };
+  Object.entries(mapa).forEach(([k,id]) => {
+    const el = document.getElementById(id);
+    if (el && precos[k] !== undefined) el.value = precos[k];
   });
 }
 
-// =============================================
-// ENGADIR / EDITAR / ELIMINAR
-// =============================================
-async function engadirVenda(){
-  const data=document.getElementById('data').value,batea=document.getElementById('batea').value;
-  const tipo=document.getElementById('tipo').value,cant=parseInt(document.getElementById('cantidade').value,10);
-  const prezoV=parseFloat(document.getElementById('prezo').value),volta=document.getElementById('volta').value;
-  const pJA=parseFloat(document.getElementById('porcentaxeJA').value)||0;
-  const pJandro=parseFloat(document.getElementById('porcentaxeJandro').value)||0;
-  const pJorge=parseFloat(document.getElementById('porcentaxeJorge').value)||0;
-  if(!data||!batea||!tipo||isNaN(cant)){alerta('Completa todos os campos obrigatorios','error');return;}
-  if(Math.abs(pJA+pJandro+pJorge-100)>0.01){alerta('Os porcentaxes deben sumar exactamente 100%','error');return;}
-  const esB=tipo==='BARCADA',quilos=esB?cant:cant*10;
-  const p=esB?prezoV:(precos[tipo]||0),imp=calc(quilos,p);
-  const v={id:Date.now(),data,batea,tipo,cantidade:esB?0:cant,quilos,prezo:p,bruto:imp.bruto,coop:imp.coop,base:imp.base,iva:imp.iva,ganancia:imp.total,volta,esBaracada:esB,cantidadeBarcada:esB?cant:null,porcentaxeJA:pJA,porcentaxeJandro:pJandro,porcentaxeJorge:pJorge,calcVersion:CALC_VERSION};
-  const btn=document.getElementById('btnVenda');btn.disabled=true;btn.textContent='⏳ Gardando…';
-  try {
-    await fbSet('amegrove/vendas/'+v.id, v);
-    vendas.push(v);limparFormVenda();actualizarUI();alerta('✅ Venda engadida correctamente!');
-  } catch(e){alerta('Erro: '+e.message,'error');}
-  btn.disabled=false;btn.textContent='➕ Engadir Venda';
-}
-window.engadirVenda=engadirVenda;
-
-async function gardarEdicion(){
-  const id=document.getElementById('editId').value;
-  const data=document.getElementById('editData').value,batea=document.getElementById('editBatea').value;
-  const tipo=document.getElementById('editTipo').value,cant=parseFloat(document.getElementById('editCantidade').value);
-  const prezoM=parseFloat(document.getElementById('editPrezo').value),volta=document.getElementById('editVolta').value;
-  const pJA=parseFloat(document.getElementById('editPorcentaxeJA').value)||0;
-  const pJandro=parseFloat(document.getElementById('editPorcentaxeJandro').value)||0;
-  const pJorge=parseFloat(document.getElementById('editPorcentaxeJorge').value)||0;
-  if(Math.abs(pJA+pJandro+pJorge-100)>0.01){alertaModal('alertEditar','Os porcentaxes deben sumar exactamente 100%');return;}
-  const esB=tipo==='BARCADA',quilos=esB?cant:cant*10;
-  const p=isNaN(prezoM)?(precos[tipo]||0):prezoM,imp=calc(quilos,p);
-  const v={id,data,batea,tipo,cantidade:esB?0:cant,quilos,prezo:p,bruto:imp.bruto,coop:imp.coop,base:imp.base,iva:imp.iva,ganancia:imp.total,volta,esBaracada:esB,cantidadeBarcada:esB?cant:null,porcentaxeJA:pJA,porcentaxeJandro:pJandro,porcentaxeJorge:pJorge,calcVersion:CALC_VERSION};
-  try {
-    await fbSet('amegrove/vendas/'+id, v);
-    const i=vendas.findIndex(x=>String(x.id)===String(id));if(i>-1)vendas[i]=v;
-    pecharModal('modalEditar');actualizarUI();alerta('✅ Venda actualizada correctamente!');
-  } catch(e){alertaModal('alertEditar','Erro: '+e.message);}
-}
-window.gardarEdicion=gardarEdicion;
-
-async function eliminarVenda(id){
-  if(!confirm('¿Estás seguro de que queres borrar esta venda?'))return;
-  try {
-    await remove(ref(db,'amegrove/vendas/'+id));
-    vendas=vendas.filter(v=>String(v.id)!==String(id));actualizarUI();alerta('✅ Venda eliminada');
-  } catch(e){alerta('Erro: '+e.message,'error');}
-}
-window.eliminarVenda=eliminarVenda;
-
-async function engadirGasto(){
-  const data=document.getElementById('gastoData').value,hermano=document.getElementById('gastoHermano').value;
-  const importe=parseFloat(document.getElementById('gastoImporte').value),concepto=document.getElementById('gastoConcepto').value||'';
-  if(!data||isNaN(importe)||importe<=0){alertaG('Introduce unha data e un importe válido (> 0).','error');return;}
-  const g={id:Date.now(),data,hermano,importe,concepto};
-  const btn=document.getElementById('btnGasto');btn.disabled=true;btn.textContent='⏳ Gardando…';
-  try {
-    await fbSet('amegrove/gastos/'+g.id, g);
-    gastos.push(g);document.getElementById('gastoImporte').value='';document.getElementById('gastoConcepto').value='';
-    actualizarUI();alertaG('✅ Gasto engadido correctamente!');
-  } catch(e){alertaG('Erro: '+e.message,'error');}
-  btn.disabled=false;btn.textContent='➕ Engadir gasto';
-}
-window.engadirGasto=engadirGasto;
-
-async function gardarEdicionGasto(){
-  const id=document.getElementById('editGastoId').value,data=document.getElementById('editGastoData').value;
-  const hermano=document.getElementById('editGastoHermano').value,importe=parseFloat(document.getElementById('editGastoImporte').value);
-  const concepto=document.getElementById('editGastoConcepto').value||'';
-  if(!data||isNaN(importe)||importe<=0){alertaModal('alertEditarGasto','Introduce unha data e un importe válido.');return;}
-  const g={id,data,hermano,importe,concepto};
-  try {
-    await fbSet('amegrove/gastos/'+id, g);
-    const i=gastos.findIndex(x=>String(x.id)===String(id));if(i>-1)gastos[i]=g;
-    pecharModal('modalEditarGasto');actualizarUI();alertaG('✅ Gasto actualizado correctamente!');
-  } catch(e){alertaModal('alertEditarGasto','Erro: '+e.message);}
-}
-window.gardarEdicionGasto=gardarEdicionGasto;
-
-async function eliminarGasto(id){
-  if(!confirm('¿Estás seguro de que queres borrar este gasto?'))return;
-  try {
-    await remove(ref(db,'amegrove/gastos/'+id));
-    gastos=gastos.filter(g=>String(g.id)!==String(id));actualizarUI();alertaG('✅ Gasto eliminado');
-  } catch(e){alerta('Erro: '+e.message,'error');}
-}
-window.eliminarGasto=eliminarGasto;
-
-async function engadirIngreso(){
-  const data=document.getElementById('ingresoData').value,hermano=document.getElementById('ingresoHermano').value;
-  const importe=parseFloat(document.getElementById('ingresoImporte').value),concepto=document.getElementById('ingresoConcepto').value||'';
-  if(!data||isNaN(importe)||importe<=0){alertaI('Introduce unha data e un importe válido (> 0).','error');return;}
-  const ing={id:Date.now(),data,hermano,importe,concepto};
-  const btn=document.getElementById('btnIngreso');btn.disabled=true;btn.textContent='⏳ Gardando…';
-  try {
-    await fbSet('amegrove/ingresos/'+ing.id, ing);
-    ingresosExtra.push(ing);document.getElementById('ingresoImporte').value='';document.getElementById('ingresoConcepto').value='';
-    actualizarUI();alertaI('✅ Ingreso extra engadido correctamente!');
-  } catch(e){alertaI('Erro: '+e.message,'error');}
-  btn.disabled=false;btn.textContent='➕ Engadir ingreso extra';
-}
-window.engadirIngreso=engadirIngreso;
-
-async function gardarEdicionIngreso(){
-  const id=document.getElementById('editIngresoId').value,data=document.getElementById('editIngresoData').value;
-  const hermano=document.getElementById('editIngresoHermano').value,importe=parseFloat(document.getElementById('editIngresoImporte').value);
-  const concepto=document.getElementById('editIngresoConcepto').value||'';
-  if(!data||isNaN(importe)||importe<=0){alertaModal('alertEditarIngreso','Introduce unha data e un importe válido.');return;}
-  const ing={id,data,hermano,importe,concepto};
-  try {
-    await fbSet('amegrove/ingresos/'+id, ing);
-    const i=ingresosExtra.findIndex(x=>String(x.id)===String(id));if(i>-1)ingresosExtra[i]=ing;
-    pecharModal('modalEditarIngreso');actualizarUI();alertaI('✅ Ingreso extra actualizado correctamente!');
-  } catch(e){alertaModal('alertEditarIngreso','Erro: '+e.message);}
-}
-window.gardarEdicionIngreso=gardarEdicionIngreso;
-
-async function eliminarIngreso(id){
-  if(!confirm('¿Estás seguro de que queres borrar este ingreso extra?'))return;
-  try {
-    await remove(ref(db,'amegrove/ingresos/'+id));
-    ingresosExtra=ingresosExtra.filter(i=>String(i.id)!==String(id));actualizarUI();alertaI('✅ Ingreso extra eliminado');
-  } catch(e){alerta('Erro: '+e.message,'error');}
-}
-window.eliminarIngreso=eliminarIngreso;
-
-async function gardarPrecos(){
-  precos={EXTRA_F:parseFloat(document.getElementById('precioEXTRA_F').value),EXTRA_R:parseFloat(document.getElementById('precioEXTRA_R').value),GRANDE1_F:parseFloat(document.getElementById('precioGRANDE1_F').value),GRANDE1_R:parseFloat(document.getElementById('precioGRANDE1_R').value),GRANDE2_F:parseFloat(document.getElementById('precioGRANDE2_F').value),GRANDE2_R:parseFloat(document.getElementById('precioGRANDE2_R').value),NORMAL_F:parseFloat(document.getElementById('precioNORMAL_F').value),NORMAL_R:parseFloat(document.getElementById('precioNORMAL_R').value),EUROPEO_F:parseFloat(document.getElementById('precioEUROPEO_F').value),EUROPEO_R:parseFloat(document.getElementById('precioEUROPEO_R').value),LACAS_F:parseFloat(document.getElementById('precioLACAS_F').value),LACAS_R:parseFloat(document.getElementById('precioLACAS_R').value),BARCADA:0};
-  try {
-    await fbSet('amegrove/precos', precos);
-    alerta('✅ Precos gardados correctamente');actualizarEtiquetaCantidade();
-  } catch(e){alerta('Erro: '+e.message,'error');}
-}
-window.gardarPrecos=gardarPrecos;
-
-function restablecerPrezos(){precos={...PREZOS_2026};actualizarPrezosForm();gardarPrecos();}
-window.restablecerPrezos=restablecerPrezos;
-
-async function limpiarTodos(){
-  if(!confirm('⚠️ Esto vai eliminar TODOS os datos. ¿Estás completamente seguro?'))return;
-  try {
-    await remove(ref(db,'amegrove'));
-    vendas=[];gastos=[];ingresosExtra=[];precos={...PREZOS_2026};
-    actualizarUI();actualizarPrezosForm();alerta('✅ Todos os datos eliminados');
-  } catch(e){alerta('Erro: '+e.message,'error');}
-}
-window.limpiarTodos=limpiarTodos;
-
-async function importarJSON(input){
-  const file=input.files&&input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=async()=>{
-    try{
-      const data=JSON.parse(reader.result);
-      if(!data||typeof data!=='object')throw new Error('JSON inválido');
-      if(!confirm('¿Importar copia?\n\nOK = REEMPLAZAR todos los datos actuales\n¿Estás seguro?'))return;
-      setSync('syncing','Importando…');
-      const nV=Array.isArray(data.vendas)?data.vendas:[];
-      const nG=Array.isArray(data.gastos)?data.gastos:[];
-      const nI=Array.isArray(data.ingresosExtra)?data.ingresosExtra:[];
-      const nP=data.precos||{...PREZOS_2026};
-      await fbSet('amegrove/vendas', nV.length?Object.fromEntries(nV.map(v=>[String(v.id),v])):null);
-      await fbSet('amegrove/gastos', nG.length?Object.fromEntries(nG.map(g=>[String(g.id),g])):null);
-      await fbSet('amegrove/ingresos', nI.length?Object.fromEntries(nI.map(i=>[String(i.id),i])):null);
-      await fbSet('amegrove/precos', nP);
-      vendas=nV;gastos=nG;ingresosExtra=nI;precos=nP;
-      actualizarUI();actualizarPrezosForm();
-      alerta('✅ Importación completada correctamente!');
-      setSync('ok','Importado · '+new Date().toLocaleTimeString('gl-ES'));
-    }catch(e){alerta('Erro ao importar: '+e.message,'error');setSync('error','Erro');}
-    input.value='';
+function guardarPrecios() {
+  precos = {
+    'EXTRA_F': parseFloat(document.getElementById('precioEXTRA_F').value)||0,
+    'EXTRA_R': parseFloat(document.getElementById('precioEXTRA_R').value)||0,
+    'GRANDE1_F': parseFloat(document.getElementById('precioGRANDE1_F').value)||0,
+    'GRANDE1_R': parseFloat(document.getElementById('precioGRANDE1_R').value)||0,
+    'GRANDE2_F': parseFloat(document.getElementById('precioGRANDE2_F').value)||0,
+    'GRANDE2_R': parseFloat(document.getElementById('precioGRANDE2_R').value)||0,
+    'NORMAL_F': parseFloat(document.getElementById('precioNORMAL_F').value)||0,
+    'NORMAL_R': parseFloat(document.getElementById('precioNORMAL_R').value)||0,
+    'EUROPEO_F': parseFloat(document.getElementById('precioEUROPEO_F').value)||0,
+    'EUROPEO_R': parseFloat(document.getElementById('precioEUROPEO_R').value)||0,
+    'LACAS_F': parseFloat(document.getElementById('precioLACAS_F').value)||0,
+    'LACAS_R': parseFloat(document.getElementById('precioLACAS_R').value)||0,
+    'BARCADA': 0
   };
-  reader.readAsText(file);
+  gardarDatos();
+  mostrarAlerta('✅ Precos gardados correctamente');
+  actualizarEtiquetaCantidade();
 }
-window.importarJSON=importarJSON;
 
-function exportarJSON(){
-  const backup={schema:1,createdAt:new Date().toISOString(),vendas,gastos,ingresosExtra,precos};
-  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`chapelo-backup-${hoxe()}.json`;
-  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+function restablecerPrezos2026() {
+  precos = {
+    'EXTRA_F':1.90,'EXTRA_R':1.90,'GRANDE1_F':1.40,'GRANDE1_R':1.40,
+    'GRANDE2_F':1.20,'GRANDE2_R':1.20,'NORMAL_F':1.00,'NORMAL_R':1.00,
+    'EUROPEO_F':0.80,'EUROPEO_R':0.80,'LACAS_F':0.60,'LACAS_R':0.60,'BARCADA':0
+  };
+  gardarDatos();
+  actualizarFormPrecos();
+  actualizarEtiquetaCantidade();
+  mostrarAlerta('✅ Prezos 2026 restablecidos');
 }
-window.exportarJSON=exportarJSON;
 
 // =============================================
-// UI
+//  ETIQUETAS FORMULARIO
 // =============================================
-function getAnosDisponibles(){
-  const anos=new Set();
-  const anoHoxe=String(new Date().getFullYear());
-  anos.add(anoHoxe);
-  vendas.forEach(v=>{if(v.data)anos.add(v.data.substring(0,4));});
-  gastos.forEach(g=>{if(g.data)anos.add(g.data.substring(0,4));});
-  ingresosExtra.forEach(i=>{if(i.data)anos.add(i.data.substring(0,4));});
-  return [...anos].sort().reverse();
+function actualizarEtiquetaCantidade() {
+  const tipo = document.getElementById('tipo').value;
+  const etCant = document.getElementById('etiquetaCantidade');
+  const etPrezo = document.getElementById('etiquetaPrezo');
+  const inputPrezo = document.getElementById('prezo');
+
+  if (tipo === 'BARCADA') {
+    if (etCant) etCant.textContent = 'Cantidade (kilos totais)';
+    if (etPrezo) etPrezo.textContent = 'Prezo €/kg (manual, ata 4 decimais)';
+    if (inputPrezo) { inputPrezo.disabled = false; inputPrezo.value = ''; inputPrezo.step = '0.0001'; }
+  } else {
+    if (etCant) etCant.textContent = 'Cantidade (sacos de 10kg)';
+    if (etPrezo) etPrezo.textContent = 'Prezo €/kg (automático)';
+    if (inputPrezo) { inputPrezo.disabled = true; inputPrezo.value = precos[tipo] || 0; inputPrezo.step = '0.01'; }
+  }
 }
 
-function actualizarSelectorAno(){
-  const sel=document.getElementById('selectAno');
-  if(!sel)return;
-  const anos=getAnosDisponibles();
-  sel.innerHTML=anos.map(a=>`<option value="${a}" ${a===anoActivo?'selected':''}>${a}</option>`).join('');
-  const titulo=document.getElementById('tituloAno');
-  if(titulo)titulo.textContent=anoActivo;
+function actualizarEtiquetaCantidadeEditar() {
+  const tipo = document.getElementById('editTipo').value;
+  const etCant = document.getElementById('editEtiquetaCantidade');
+  const inputPrezo = document.getElementById('editPrezo');
+  if (tipo === 'BARCADA') {
+    if (etCant) etCant.textContent = 'Cantidade (kilos totais)';
+    if (inputPrezo) { inputPrezo.placeholder = 'Prezo €/kg manual (4 decimais)'; inputPrezo.step = '0.0001'; }
+  } else {
+    if (etCant) etCant.textContent = 'Cantidade (sacos de 10kg)';
+    if (inputPrezo) { inputPrezo.placeholder = 'Auto: ' + (precos[tipo]||0).toFixed(2) + ' €/kg'; inputPrezo.step = '0.01'; }
+  }
 }
 
-function setAno(ano){
-  anoActivo=String(ano);
-  const sel=document.getElementById('selectAno');
-  if(sel)sel.value=anoActivo;
-  const titulo=document.getElementById('tituloAno');
-  if(titulo)titulo.textContent=anoActivo;
-  filtroData=hoxe().startsWith(anoActivo)?hoxe():anoActivo+'-12-31';
-  filtroDataGastos=filtroData;
-  filtroDataIngresos=filtroData;
-  actualizarUI();
-}
-window.setAno=setAno;
+document.getElementById('porcentaxeJA').addEventListener('input', actualizarTotalPorcentaxe);
+document.getElementById('porcentaxeJandro').addEventListener('input', actualizarTotalPorcentaxe);
+document.getElementById('porcentaxeJorge').addEventListener('input', actualizarTotalPorcentaxe);
 
-function cambiarAno(dir){
-  const anos=getAnosDisponibles();
-  const idx=anos.indexOf(anoActivo);
-  const nuevoIdx=idx+(-dir);
-  if(nuevoIdx>=0&&nuevoIdx<anos.length)setAno(anos[nuevoIdx]);
-}
-window.cambiarAno=cambiarAno;
-
-function actualizarUI(){actualizarSelectorAno();actualizarListado();actualizarListadoGastos();actualizarListadoIngresos();actualizarEstadisticas();actualizarReparticion();actualizarResumen();}
-
-function actualizarListado(){
-  const tb=document.getElementById('listadoVendas');
-  const lista=verTodasAsVendas?vendas.filter(v=>v.data.startsWith(anoActivo)):vendas.filter(v=>v.data===filtroData);
-  if(!lista.length){tb.innerHTML=`<tr><td colspan="12" style="text-align:center;color:#999">Sen datos ${verTodasAsVendas?'':'para '+filtroData}</td></tr>`;return;}
-  tb.innerHTML=lista.slice().sort((a,b)=>a.data===b.data?Number(b.id)-Number(a.id):(a.data>b.data?-1:1)).map(v=>`<tr>
-    <td>${v.data}</td><td><strong>${v.batea}</strong></td><td>${v.tipo}</td>
-    <td>${v.esBaracada?(v.cantidadeBarcada+' kg'):(v.cantidade+' sacos')}</td>
-    <td>${v.quilos} kg</td><td>${v.esBaracada?Number(v.prezo).toFixed(4):Number(v.prezo).toFixed(2)}€</td>
-    <td><strong>${Number(v.ganancia).toFixed(2)}€</strong></td>
-    <td>${v.porcentaxeJA}%</td><td>${v.porcentaxeJandro}%</td><td>${v.porcentaxeJorge}%</td><td>${v.volta||'-'}</td>
-    <td style="white-space:nowrap">
-      <button class="edit-btn" onclick="abrirEditar(${v.id})">Editar</button>
-      <button class="delete-btn" onclick="eliminarVenda(${v.id})">Borrar</button>
-    </td></tr>`).join('');
+function actualizarTotalPorcentaxe() {
+  const pJA     = parseFloat(document.getElementById('porcentaxeJA').value)||0;
+  const pJandro = parseFloat(document.getElementById('porcentaxeJandro').value)||0;
+  const pJorge  = parseFloat(document.getElementById('porcentaxeJorge').value)||0;
+  const total   = pJA + pJandro + pJorge;
+  const elTotal = document.getElementById('totalPorcentaxe');
+  const aviso   = document.getElementById('avisoPorcentaxe');
+  if (elTotal) elTotal.textContent = total.toFixed(1);
+  if (Math.abs(total - 100) > 0.01) {
+    if (elTotal) elTotal.style.color = '#dc3545';
+    if (aviso) aviso.style.display = 'block';
+  } else {
+    if (elTotal) elTotal.style.color = '#28a745';
+    if (aviso) aviso.style.display = 'none';
+  }
 }
 
-function actualizarListadoGastos(){
-  const tb=document.getElementById('listadoGastos');
-  const lista=verTodosOsGastos?gastos.filter(g=>g.data.startsWith(anoActivo)):gastos.filter(g=>g.data===filtroDataGastos);
-  if(!lista.length){tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:#999">Sen datos ${verTodosOsGastos?'':'para '+filtroDataGastos}</td></tr>`;return;}
-  tb.innerHTML=lista.slice().sort((a,b)=>a.data===b.data?Number(b.id)-Number(a.id):(a.data>b.data?-1:1)).map(g=>`<tr>
-    <td>${g.data}</td><td><strong>${nom(g.hermano)}</strong></td><td>${Number(g.importe).toFixed(2)}€</td><td>${g.concepto||'-'}</td>
-    <td style="white-space:nowrap">
-      <button class="edit-btn" onclick="abrirEditarGasto(${g.id})">Editar</button>
-      <button class="delete-btn" onclick="eliminarGasto(${g.id})">Borrar</button>
-    </td></tr>`).join('');
+// =============================================
+//  SUBMIT FORMULARIOS
+// =============================================
+document.getElementById('entradaForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const data        = document.getElementById('data').value;
+  const batea       = document.getElementById('batea').value;
+  const tipo        = document.getElementById('tipo').value;
+  const cantidade   = parseFloat(document.getElementById('cantidade').value);
+  const prezo       = parseFloat(document.getElementById('prezo').value);
+  const volta       = document.getElementById('volta').value;
+  const retPct      = parseFloat(document.getElementById('retencionPct').value)||0;
+  const pJA         = parseFloat(document.getElementById('porcentaxeJA').value)||0;
+  const pJandro     = parseFloat(document.getElementById('porcentaxeJandro').value)||0;
+  const pJorge      = parseFloat(document.getElementById('porcentaxeJorge').value)||0;
+
+  if (!data || !batea || !tipo || isNaN(cantidade) || isNaN(prezo)) {
+    mostrarAlerta('Por favor completa todos os campos obrigatorios', 'error'); return;
+  }
+  if (Math.abs(pJA + pJandro + pJorge - 100) > 0.01) {
+    mostrarAlerta('Os porcentaxes deben sumar exactamente 100%', 'error'); return;
+  }
+
+  const esBaracada  = tipo === 'BARCADA';
+  const quilos      = esBaracada ? cantidade : cantidade * 10;
+  const prezoFinal  = esBaracada ? prezo : (precos[tipo]||0);
+  const imp         = calcularImportesVenda(quilos, prezoFinal);
+  const retImporte  = imp.bruto * (retPct / 100);
+
+  const venda = {
+    id: Date.now(), data, batea, tipo,
+    cantidade: esBaracada ? 0 : cantidade,
+    quilos, prezo: prezoFinal,
+    bruto: imp.bruto, coop: imp.coop, base: imp.base, iva: imp.iva, ganancia: imp.total,
+    retencionPct: retPct, retencionImporte: retImporte,
+    volta, esBaracada,
+    cantidadeBarcada: esBaracada ? cantidade : null,
+    porcentaxeJA: pJA, porcentaxeJandro: pJandro, porcentaxeJorge: pJorge,
+    calcVersion: CALC_VERSION
+  };
+
+  vendas.push(venda);
+  gardarDatos();
+  this.reset();
+  document.getElementById('data').valueAsDate = new Date();
+  document.getElementById('retencionPct').value = 2;
+  actualizarEtiquetaCantidade();
+  actualizarTotalPorcentaxe();
+  verHoxe();
+  actualizarFormulario();
+  mostrarAlerta('✅ Venda engadida correctamente!');
+});
+
+document.getElementById('gastoForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const data     = document.getElementById('gastoData').value;
+  const hermano  = document.getElementById('gastoHermano').value;
+  const importe  = parseFloat(document.getElementById('gastoImporte').value);
+  const concepto = document.getElementById('gastoConcepto').value || '';
+
+  if (!data || !hermano || isNaN(importe) || importe <= 0) {
+    mostrarAlertaGastos('Introduce unha data e un importe válido (> 0).', 'error'); return;
+  }
+  gastos.push({ id: Date.now(), data, hermano, importe, concepto });
+  gardarDatos();
+  this.reset();
+  document.getElementById('gastoData').valueAsDate = new Date();
+  verGastosHoxe();
+  actualizarFormulario();
+  mostrarAlertaGastos('✅ Gasto engadido correctamente!');
+});
+
+document.getElementById('ingresoForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const data     = document.getElementById('ingresoData').value;
+  const hermano  = document.getElementById('ingresoHermano').value;
+  const importe  = parseFloat(document.getElementById('ingresoImporte').value);
+  const concepto = document.getElementById('ingresoConcepto').value || '';
+
+  if (!data || !hermano || isNaN(importe) || importe <= 0) {
+    mostrarAlertaIngresos('Introduce unha data e un importe válido (> 0).', 'error'); return;
+  }
+  ingresosExtra.push({ id: Date.now(), data, hermano, importe, concepto });
+  gardarDatos();
+  this.reset();
+  document.getElementById('ingresoData').valueAsDate = new Date();
+  verIngresosHoxe();
+  actualizarFormulario();
+  mostrarAlertaIngresos('✅ Ingreso extra engadido correctamente!');
+});
+
+// =============================================
+//  ALERTAS
+// =============================================
+function mostrarAlerta(msg, tipo='success') {
+  const el = document.getElementById('alert');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'alert' + (tipo === 'error' ? ' error' : '');
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+function mostrarAlertaGastos(msg, tipo='success') {
+  const el = document.getElementById('alertGastos');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'alert' + (tipo === 'error' ? ' error' : '');
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+function mostrarAlertaIngresos(msg, tipo='success') {
+  const el = document.getElementById('alertIngresos');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'alert' + (tipo === 'error' ? ' error' : '');
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
 }
 
-function actualizarListadoIngresos(){
-  const tb=document.getElementById('listadoIngresos');
-  const lista=verTodosOsIngresos?ingresosExtra.filter(i=>i.data.startsWith(anoActivo)):ingresosExtra.filter(i=>i.data===filtroDataIngresos);
-  if(!lista.length){tb.innerHTML=`<tr><td colspan="5" style="text-align:center;color:#999">Sen datos ${verTodosOsIngresos?'':'para '+filtroDataIngresos}</td></tr>`;return;}
-  tb.innerHTML=lista.slice().sort((a,b)=>a.data===b.data?Number(b.id)-Number(a.id):(a.data>b.data?-1:1)).map(i=>`<tr>
-    <td>${i.data}</td><td><strong>${nom(i.hermano)}</strong></td><td>${Number(i.importe).toFixed(2)}€</td><td>${i.concepto||'-'}</td>
-    <td style="white-space:nowrap">
-      <button class="edit-btn" onclick="abrirEditarIngreso(${i.id})">Editar</button>
-      <button class="delete-btn" onclick="eliminarIngreso(${i.id})">Borrar</button>
-    </td></tr>`).join('');
+// =============================================
+//  FILTROS / NAVEGACIÓN
+// =============================================
+function verHoxe() {
+  filtroData = new Date().toISOString().split('T')[0];
+  verTodasAsVendas = false;
+  const fd = document.getElementById('filtroData');
+  if (fd) fd.value = filtroData;
+  actualizarListado();
+  actualizarReparticion();
+}
+function verTodas() { verTodasAsVendas = true; actualizarListado(); actualizarReparticion(); }
+function verGastosHoxe() {
+  filtroDataGastos = new Date().toISOString().split('T')[0];
+  verTodosOsGastos = false;
+  const fd = document.getElementById('filtroDataGastos');
+  if (fd) fd.value = filtroDataGastos;
+  actualizarListadoGastos();
+}
+function verGastosTodos() { verTodosOsGastos = true; actualizarListadoGastos(); }
+function verIngresosHoxe() {
+  filtroDataIngresos = new Date().toISOString().split('T')[0];
+  verTodosOsIngresos = false;
+  const fd = document.getElementById('filtroDataIngresos');
+  if (fd) fd.value = filtroDataIngresos;
+  actualizarListadoIngresos();
+}
+function verIngresosTodos() { verTodosOsIngresos = true; actualizarListadoIngresos(); }
+
+// =============================================
+//  RENDERIZADO LISTADOS
+// =============================================
+function actualizarListado() {
+  const tbody = document.getElementById('listadoVendas');
+  const lista = verTodasAsVendas ? vendas : vendas.filter(v => v.data === filtroData);
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="13" style="text-align:center;color:#999;">Sen datos ${verTodasAsVendas ? '' : 'para ' + filtroData}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = lista.slice().sort((a,b) => a.data === b.data ? b.id - a.id : a.data > b.data ? -1 : 1).map(v => {
+    const pDisp = v.esBaracada ? Number(v.prezo).toFixed(4) : Number(v.prezo).toFixed(2);
+    const retPct = v.retencionPct !== undefined ? v.retencionPct : 2;
+    return `<tr>
+      <td>${v.data}</td>
+      <td><strong>${v.batea}</strong></td>
+      <td>${v.tipo}</td>
+      <td>${v.esBaracada ? (v.cantidadeBarcada + ' kg') : (v.cantidade + ' sacos')}</td>
+      <td>${v.quilos} kg</td>
+      <td>${pDisp}€</td>
+      <td><strong>${Number(v.ganancia).toFixed(2)}€</strong></td>
+      <td>${retPct}%</td>
+      <td>${v.porcentaxeJA}%</td>
+      <td>${v.porcentaxeJandro}%</td>
+      <td>${v.porcentaxeJorge}%</td>
+      <td>${v.volta || '-'}</td>
+      <td style="white-space:nowrap;">
+        <button type="button" style="background:#0d6efd;color:#fff;border:none;padding:6px 10px;border-radius:3px;cursor:pointer;font-size:0.85em;margin-right:6px;" onclick="abrirEditar(${v.id})">Editar</button>
+        <button class="delete-btn" onclick="eliminarVenda(${v.id})">Borrar</button>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
-function actualizarEstadisticas(){
-  const ini=anoActivo+'-01-01', fin=anoActivo+'-12-31';
-  const vv=vendas.filter(v=>v.data>=ini&&v.data<=fin),gg=gastos.filter(g=>g.data>=ini&&g.data<=fin),ii=ingresosExtra.filter(i=>i.data>=ini&&i.data<=fin);
-  let gJA=0,gJandro=0,gJorge=0;
-  vv.forEach(v=>{gJA+=Number(v.ganancia)*(Number(v.porcentaxeJA)/100);gJandro+=Number(v.ganancia)*(Number(v.porcentaxeJandro)/100);gJorge+=Number(v.ganancia)*(Number(v.porcentaxeJorge)/100);});
-  let iJA=0,iJandro=0,iJorge=0;
-  ii.forEach(i=>{if(i.hermano==='JA')iJA+=Number(i.importe);if(i.hermano==='Jandro')iJandro+=Number(i.importe);if(i.hermano==='Jorge')iJorge+=Number(i.importe);});
-  let gasJA=0,gasJandro=0,gasJorge=0;
-  gg.forEach(g=>{if(g.hermano==='JA')gasJA+=Number(g.importe);if(g.hermano==='Jandro')gasJandro+=Number(g.importe);if(g.hermano==='Jorge')gasJorge+=Number(g.importe);});
-  const nJA=gJA+iJA-gasJA,nJandro=gJandro+iJandro-gasJandro,nJorge=gJorge+iJorge-gasJorge,tN=nJA+nJandro+nJorge;
-  const pct=v=>tN?((v/tN)*100).toFixed(1):'0.0';
-  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=Number(v).toFixed(2)+'€';};
-  s('gananciasJA',gJA);s('gananciasJandro',gJandro);s('gananciasJorge',gJorge);
-  s('ingresosJA',iJA);s('ingresosJandro',iJandro);s('ingresosJorge',iJorge);
-  s('gastosJA',gasJA);s('gastosJandro',gasJandro);s('gastosJorge',gasJorge);
-  s('netoJA',nJA);s('netoJandro',nJandro);s('netoJorge',nJorge);
-  s('totalGanancias',gJA+gJandro+gJorge);s('totalIngresos',iJA+iJandro+iJorge);s('totalGastos',gasJA+gasJandro+gasJorge);s('totalNeto',tN);
-  document.getElementById('porcentaxeNetoJA').textContent=pct(nJA);document.getElementById('porcentaxeNetoJandro').textContent=pct(nJandro);document.getElementById('porcentaxeNetoJorge').textContent=pct(nJorge);
+function actualizarListadoGastos() {
+  const tbody = document.getElementById('listadoGastos');
+  const lista = verTodosOsGastos ? gastos : gastos.filter(g => g.data === filtroDataGastos);
+  const nom = h => h === 'JA' ? 'Juan Antonio' : h;
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">Sen datos ${verTodosOsGastos ? '' : 'para ' + filtroDataGastos}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = lista.slice().sort((a,b) => a.data === b.data ? b.id - a.id : a.data > b.data ? -1 : 1).map(g => `
+    <tr>
+      <td>${g.data}</td><td><strong>${nom(g.hermano)}</strong></td>
+      <td>${Number(g.importe).toFixed(2)}€</td><td>${g.concepto||'-'}</td>
+      <td style="white-space:nowrap;">
+        <button type="button" style="background:#0d6efd;color:#fff;border:none;padding:6px 10px;border-radius:3px;cursor:pointer;font-size:0.85em;margin-right:6px;" onclick="abrirEditarGasto(${g.id})">Editar</button>
+        <button class="delete-btn" onclick="eliminarGasto(${g.id})">Borrar</button>
+      </td>
+    </tr>`).join('');
 }
 
-function actualizarReparticion(){
-  const lista=verTodasAsVendas?vendas.filter(v=>v.data.startsWith(anoActivo)):vendas.filter(v=>v.data===filtroData);
-  const rep={};
-  lista.forEach(v=>{if(!rep[v.batea])rep[v.batea]={sacos:0,quilos:0,ganancia:0};if(!v.esBaracada)rep[v.batea].sacos+=Number(v.cantidade)||0;rep[v.batea].quilos+=Number(v.quilos)||0;rep[v.batea].ganancia+=Number(v.ganancia)||0;});
-  document.getElementById('reparticionBatea').innerHTML=Object.entries(rep).map(([b,d])=>`<div class="summary-row"><span><strong>${b}</strong></span><span>${d.sacos} sacos | ${d.quilos} kg | <strong>${d.ganancia.toFixed(2)}€</strong></span></div>`).join('')||'<p style="color:#999">Sen datos</p>';
+function actualizarListadoIngresos() {
+  const tbody = document.getElementById('listadoIngresos');
+  const lista = verTodosOsIngresos ? ingresosExtra : ingresosExtra.filter(i => i.data === filtroDataIngresos);
+  const nom = h => h === 'JA' ? 'Juan Antonio' : h;
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#999;">Sen datos ${verTodosOsIngresos ? '' : 'para ' + filtroDataIngresos}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = lista.slice().sort((a,b) => a.data === b.data ? b.id - a.id : a.data > b.data ? -1 : 1).map(i => `
+    <tr>
+      <td>${i.data}</td><td><strong>${nom(i.hermano)}</strong></td>
+      <td>${Number(i.importe).toFixed(2)}€</td><td>${i.concepto||'-'}</td>
+      <td style="white-space:nowrap;">
+        <button type="button" style="background:#0d6efd;color:#fff;border:none;padding:6px 10px;border-radius:3px;cursor:pointer;font-size:0.85em;margin-right:6px;" onclick="abrirEditarIngreso(${i.id})">Editar</button>
+        <button class="delete-btn" onclick="eliminarIngreso(${i.id})">Borrar</button>
+      </td>
+    </tr>`).join('');
 }
 
-function actualizarResumen(){
-  const res={};
-  vendas.filter(v=>v.data.startsWith(anoActivo)).forEach(v=>{const m=v.data.substring(0,7);if(!res[m])res[m]={sacos:0,quilos:0,ganancia:0,registros:0};if(!v.esBaracada)res[m].sacos+=Number(v.cantidade)||0;res[m].quilos+=Number(v.quilos)||0;res[m].ganancia+=Number(v.ganancia)||0;res[m].registros++;});
-  document.getElementById('resumoMensual').innerHTML=Object.entries(res).sort().reverse().map(([m,d])=>`<div class="month-summary"><h3>${new Date(m+'-01').toLocaleDateString('gl-ES',{month:'long',year:'numeric'})}</h3><div class="summary-row"><span>Rexistros:</span><strong>${d.registros}</strong></div><div class="summary-row"><span>Total de Sacos:</span><strong>${d.sacos}</strong></div><div class="summary-row"><span>Total de Quilos:</span><strong>${d.quilos}</strong></div><div class="summary-row"><span>Total de Ganancias:</span><strong style="color:#28a745">${d.ganancia.toFixed(2)}€</strong></div></div>`).join('')||'<p style="color:#999">Sen datos</p>';
+// =============================================
+//  ESTADÍSTICAS
+// =============================================
+function actualizarEstadisticas() {
+  const ini = anoActivo + '-01-01';
+  const vv  = vendas.filter(v => v.data >= ini);
+  const gg  = gastos.filter(g => g.data >= ini);
+  const ii  = ingresosExtra.filter(i => i.data >= ini);
+
+  let ganJA=0, ganJandro=0, ganJorge=0;
+  vv.forEach(v => {
+    const g = Number(v.ganancia||0);
+    ganJA     += g * (Number(v.porcentaxeJA||0)/100);
+    ganJandro += g * (Number(v.porcentaxeJandro||0)/100);
+    ganJorge  += g * (Number(v.porcentaxeJorge||0)/100);
+  });
+
+  let ingJA=0, ingJandro=0, ingJorge=0;
+  ii.forEach(i => {
+    if (i.hermano === 'JA')     ingJA     += Number(i.importe||0);
+    if (i.hermano === 'Jandro') ingJandro += Number(i.importe||0);
+    if (i.hermano === 'Jorge')  ingJorge  += Number(i.importe||0);
+  });
+
+  let gasJA=0, gasJandro=0, gasJorge=0;
+  gg.forEach(g => {
+    if (g.hermano === 'JA')     gasJA     += Number(g.importe||0);
+    if (g.hermano === 'Jandro') gasJandro += Number(g.importe||0);
+    if (g.hermano === 'Jorge')  gasJorge  += Number(g.importe||0);
+  });
+
+  const netJA     = ganJA + ingJA - gasJA;
+  const netJandro = ganJandro + ingJandro - gasJandro;
+  const netJorge  = ganJorge + ingJorge - gasJorge;
+  const totNeto   = netJA + netJandro + netJorge;
+
+  const f = (n) => n.toFixed(2) + '€';
+
+  document.getElementById('gananciasJA').textContent     = f(ganJA);
+  document.getElementById('gananciasJandro').textContent  = f(ganJandro);
+  document.getElementById('gananciasJorge').textContent   = f(ganJorge);
+  document.getElementById('totalGanancias').textContent   = f(ganJA+ganJandro+ganJorge);
+  document.getElementById('ingresosJA').textContent       = f(ingJA);
+  document.getElementById('ingresosJandro').textContent   = f(ingJandro);
+  document.getElementById('ingresosJorge').textContent    = f(ingJorge);
+  document.getElementById('totalIngresos').textContent    = f(ingJA+ingJandro+ingJorge);
+  document.getElementById('gastosJA').textContent         = f(gasJA);
+  document.getElementById('gastosJandro').textContent     = f(gasJandro);
+  document.getElementById('gastosJorge').textContent      = f(gasJorge);
+  document.getElementById('totalGastos').textContent      = f(gasJA+gasJandro+gasJorge);
+  document.getElementById('netoJA').textContent           = f(netJA);
+  document.getElementById('netoJandro').textContent       = f(netJandro);
+  document.getElementById('netoJorge').textContent        = f(netJorge);
+  document.getElementById('totalNeto').textContent        = f(totNeto);
+  document.getElementById('porcentaxeNetoJA').textContent     = totNeto ? (netJA/totNeto*100).toFixed(1) : '0';
+  document.getElementById('porcentaxeNetoJandro').textContent = totNeto ? (netJandro/totNeto*100).toFixed(1) : '0';
+  document.getElementById('porcentaxeNetoJorge').textContent  = totNeto ? (netJorge/totNeto*100).toFixed(1) : '0';
 }
 
-function actualizarPrezosForm(){
-  ['EXTRA_F','EXTRA_R','GRANDE1_F','GRANDE1_R','GRANDE2_F','GRANDE2_R','NORMAL_F','NORMAL_R','EUROPEO_F','EUROPEO_R','LACAS_F','LACAS_R'].forEach(k=>{const el=document.getElementById('precio'+k);if(el&&precos[k]!==undefined)el.value=precos[k];});
+function actualizarReparticion() {
+  const lista = verTodasAsVendas ? vendas : vendas.filter(v => v.data === filtroData);
+  const rep = {};
+  lista.forEach(v => {
+    if (!rep[v.batea]) rep[v.batea] = { sacos: 0, quilos: 0, ganancia: 0 };
+    if (!v.esBaracada) rep[v.batea].sacos += Number(v.cantidade||0);
+    rep[v.batea].quilos   += Number(v.quilos||0);
+    rep[v.batea].ganancia += Number(v.ganancia||0);
+  });
+  const html = Object.entries(rep).map(([b,d]) =>
+    `<div class="summary-row"><span><strong>${b}</strong></span><span>${d.sacos} sacos | ${d.quilos} kg | <strong>${d.ganancia.toFixed(2)}€</strong></span></div>`
+  ).join('');
+  document.getElementById('reparticionBatea').innerHTML = html || '<p style="color:#999;">Sen datos</p>';
 }
 
-function verHoxe(){filtroData=hoxe();verTodasAsVendas=false;document.getElementById('filtroData').value=filtroData;actualizarListado();actualizarReparticion();}
-function verTodas(){verTodasAsVendas=true;actualizarListado();actualizarReparticion();}
-function verGastosHoxe(){filtroDataGastos=hoxe();verTodosOsGastos=false;document.getElementById('filtroDataGastos').value=filtroDataGastos;actualizarListadoGastos();}
-function verGastosTodos(){verTodosOsGastos=true;actualizarListadoGastos();}
-function verIngresosHoxe(){filtroDataIngresos=hoxe();verTodosOsIngresos=false;document.getElementById('filtroDataIngresos').value=filtroDataIngresos;actualizarListadoIngresos();}
-function verIngresosTodos(){verTodosOsIngresos=true;actualizarListadoIngresos();}
-window.verHoxe=verHoxe;window.verTodas=verTodas;
-window.verGastosHoxe=verGastosHoxe;window.verGastosTodos=verGastosTodos;
-window.verIngresosHoxe=verIngresosHoxe;window.verIngresosTodos=verIngresosTodos;
-
-function abrirEditar(id){
-  const v=vendas.find(x=>String(x.id)===String(id));if(!v)return;
-  document.getElementById('editId').value=v.id;document.getElementById('editData').value=v.data;document.getElementById('editBatea').value=v.batea;document.getElementById('editTipo').value=v.tipo;
-  document.getElementById('editCantidade').value=v.esBaracada?(v.cantidadeBarcada||0):(v.cantidade||0);document.getElementById('editPrezo').value='';document.getElementById('editVolta').value=v.volta||'';
-  document.getElementById('editPorcentaxeJA').value=v.porcentaxeJA;document.getElementById('editPorcentaxeJandro').value=v.porcentaxeJandro;document.getElementById('editPorcentaxeJorge').value=v.porcentaxeJorge;
-  actualizarEtiquetaEditar();document.getElementById('alertEditar').style.display='none';document.getElementById('modalEditar').style.display='flex';
+function actualizarResumen() {
+  const porMes = {};
+  vendas.forEach(v => {
+    const mes = v.data.substring(0,7);
+    if (!porMes[mes]) porMes[mes] = { sacos: 0, quilos: 0, ganancia: 0, rexistros: 0 };
+    if (!v.esBaracada) porMes[mes].sacos += Number(v.cantidade||0);
+    porMes[mes].quilos   += Number(v.quilos||0);
+    porMes[mes].ganancia += Number(v.ganancia||0);
+    porMes[mes].rexistros++;
+  });
+  const html = Object.entries(porMes).sort().reverse().map(([mes, d]) => `
+    <div class="month-summary">
+      <h3>${new Date(mes+'-01').toLocaleDateString('gl-ES',{month:'long',year:'numeric'})}</h3>
+      <div class="summary-row"><span>Rexistros:</span><strong>${d.rexistros}</strong></div>
+      <div class="summary-row"><span>Total Sacos:</span><strong>${d.sacos}</strong></div>
+      <div class="summary-row"><span>Total Quilos:</span><strong>${d.quilos}</strong></div>
+      <div class="summary-row"><span>Total Ganancias:</span><strong style="color:#28a745;">${d.ganancia.toFixed(2)}€</strong></div>
+    </div>`).join('');
+  document.getElementById('resumoMensual').innerHTML = html || '<p style="color:#999;">Sen datos</p>';
 }
-window.abrirEditar=abrirEditar;
 
-function abrirEditarGasto(id){
-  const g=gastos.find(x=>String(x.id)===String(id));if(!g)return;
-  document.getElementById('editGastoId').value=g.id;document.getElementById('editGastoData').value=g.data;document.getElementById('editGastoHermano').value=g.hermano;document.getElementById('editGastoImporte').value=g.importe;document.getElementById('editGastoConcepto').value=g.concepto||'';
-  document.getElementById('alertEditarGasto').style.display='none';document.getElementById('modalEditarGasto').style.display='flex';
+function actualizarFormulario() {
+  actualizarListado();
+  actualizarListadoGastos();
+  actualizarListadoIngresos();
+  actualizarEstadisticas();
+  actualizarReparticion();
+  actualizarResumen();
 }
-window.abrirEditarGasto=abrirEditarGasto;
 
-function abrirEditarIngreso(id){
-  const i=ingresosExtra.find(x=>String(x.id)===String(id));if(!i)return;
-  document.getElementById('editIngresoId').value=i.id;document.getElementById('editIngresoData').value=i.data;document.getElementById('editIngresoHermano').value=i.hermano;document.getElementById('editIngresoImporte').value=i.importe;document.getElementById('editIngresoConcepto').value=i.concepto||'';
-  document.getElementById('alertEditarIngreso').style.display='none';document.getElementById('modalEditarIngreso').style.display='flex';
+// =============================================
+//  ELIMINAR
+// =============================================
+function eliminarVenda(id) {
+  if (confirm('¿Seguro que queres borrar esta venda?')) {
+    vendas = vendas.filter(v => v.id !== id);
+    gardarDatos(); actualizarFormulario(); mostrarAlerta('✅ Venda eliminada');
+  }
 }
-window.abrirEditarIngreso=abrirEditarIngreso;
-
-function pecharModal(id){document.getElementById(id).style.display='none';}
-window.pecharModal=pecharModal;
-['modalEditar','modalEditarGasto','modalEditarIngreso'].forEach(id=>{document.getElementById(id).addEventListener('click',e=>{if(e.target.id===id)pecharModal(id);});});
-
-function actualizarEtiquetaCantidade(){
-  const tipo=document.getElementById('tipo').value,et=document.getElementById('etiquetaCantidade'),etP=document.getElementById('etiquetaPrezo'),inp=document.getElementById('prezo');
-  if(tipo==='BARCADA'){et.textContent='Cantidade (kilos totais)';etP.textContent='Prezo €/kg (manual, 4 decimais)';inp.disabled=false;inp.value='';inp.step='0.0001';}
-  else{et.textContent='Cantidade (sacos de 10kg)';etP.textContent='Prezo €/kg (automático)';inp.disabled=true;inp.value=precos[tipo]||0;inp.step='0.01';}
+function eliminarGasto(id) {
+  if (confirm('¿Seguro que queres borrar este gasto?')) {
+    gastos = gastos.filter(g => g.id !== id);
+    gardarDatos(); actualizarFormulario(); mostrarAlertaGastos('✅ Gasto eliminado');
+  }
 }
-window.actualizarEtiquetaCantidade=actualizarEtiquetaCantidade;
-
-function actualizarEtiquetaEditar(){
-  const tipo=document.getElementById('editTipo').value,et=document.getElementById('editEtiquetaCantidade'),inp=document.getElementById('editPrezo');
-  if(tipo==='BARCADA'){et.textContent='Cantidade (kilos totais)';inp.placeholder='Prezo €/kg (manual, 4 decimais)';inp.step='0.0001';}
-  else{et.textContent='Cantidade (sacos de 10kg)';inp.placeholder=`Auto: ${(precos[tipo]??0).toFixed(2)} €/kg (ou escribe outro)`;inp.step='0.01';}
+function eliminarIngreso(id) {
+  if (confirm('¿Seguro que queres borrar este ingreso extra?')) {
+    ingresosExtra = ingresosExtra.filter(i => i.id !== id);
+    gardarDatos(); actualizarFormulario(); mostrarAlertaIngresos('✅ Ingreso extra eliminado');
+  }
 }
-window.actualizarEtiquetaEditar=actualizarEtiquetaEditar;
-
-function actualizarTotalPorcentaxe(){
-  const pJA=parseFloat(document.getElementById('porcentaxeJA').value)||0;
-  const pJandro=parseFloat(document.getElementById('porcentaxeJandro').value)||0;
-  const pJorge=parseFloat(document.getElementById('porcentaxeJorge').value)||0;
-  const total=pJA+pJandro+pJorge;
-  const el=document.getElementById('totalPorcentaxe'),av=document.getElementById('avisoPorcentaxe');
-  el.textContent=total.toFixed(1);
-  el.style.color=Math.abs(total-100)>0.01?'#dc3545':'#28a745';
-  av.style.display=Math.abs(total-100)>0.01?'block':'none';
+function limpiarTodos() {
+  if (confirm('⚠️ Esto vai eliminar TODOS os datos (vendas, gastos e ingresos). ¿Estás completamente seguro?')) {
+    vendas = []; gastos = []; ingresosExtra = [];
+    gardarDatos(); actualizarFormulario(); mostrarAlerta('✅ Todos os datos eliminados');
+  }
 }
-['porcentaxeJA','porcentaxeJandro','porcentaxeJorge'].forEach(id=>document.getElementById(id).addEventListener('input',actualizarTotalPorcentaxe));
 
-function limparFormVenda(){
-  document.getElementById('batea').value='';document.getElementById('tipo').value='';
-  document.getElementById('cantidade').value='';document.getElementById('volta').value='';
-  document.getElementById('porcentaxeJA').value=0;document.getElementById('porcentaxeJandro').value=0;document.getElementById('porcentaxeJorge').value=0;
-  document.getElementById('totalPorcentaxe').textContent='0';actualizarEtiquetaCantidade();
+// =============================================
+//  TABS
+// =============================================
+function mostrarTab(tab, ev) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  if (ev && ev.target) ev.target.classList.add('active');
 }
-window.limparFormVenda=limparFormVenda;
 
-function mostrarTab(tab,ev){
-  document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(el=>el.classList.remove('active'));
-  document.getElementById(tab).classList.add('active');if(ev&&ev.target)ev.target.classList.add('active');
+// =============================================
+//  MODAIS EDITAR VENDA
+// =============================================
+function abrirEditar(id) {
+  const v = vendas.find(x => x.id === id);
+  if (!v) return;
+  document.getElementById('editId').value          = v.id;
+  document.getElementById('editData').value        = v.data;
+  document.getElementById('editBatea').value       = v.batea;
+  document.getElementById('editTipo').value        = v.tipo;
+  document.getElementById('editCantidade').value   = v.esBaracada ? (v.cantidadeBarcada||0) : (v.cantidade||0);
+  document.getElementById('editPrezo').value       = '';
+  document.getElementById('editRetencionPct').value= v.retencionPct !== undefined ? v.retencionPct : 2;
+  document.getElementById('editVolta').value       = v.volta || '';
+  document.getElementById('editPorcentaxeJA').value     = v.porcentaxeJA;
+  document.getElementById('editPorcentaxeJandro').value = v.porcentaxeJandro;
+  document.getElementById('editPorcentaxeJorge').value  = v.porcentaxeJorge;
+  actualizarEtiquetaCantidadeEditar();
+  document.getElementById('alertEditar').style.display = 'none';
+  document.getElementById('modalEditar').style.display = 'flex';
 }
-window.mostrarTab=mostrarTab;
+function pecharModalEditar() { document.getElementById('modalEditar').style.display = 'none'; }
 
-function exportarExcel(){
-  if(!vendas.length&&!gastos.length&&!ingresosExtra.length){alerta('Non hai datos para exportar','error');return;}
-  const wb=XLSX.utils.book_new();
-  const FMT_EUR='#,##0.00"€"',FMT_PCT='0"%"';
-  const setFmt=(ws,cols,fmt)=>{if(!ws['!ref'])return;const rng=XLSX.utils.decode_range(ws['!ref']);cols.forEach(c=>{for(let r=rng.s.r+1;r<=rng.e.r;r++){const a=XLSX.utils.encode_cell({r,c});const cell=ws[a];if(cell&&cell.t==='n')cell.z=fmt;}});};
-  const vData=[['Data','Batea','Tipo','Sacos','Quilos','Prezo €/kg','Bruto €','Coop 6,5% €','Base €','IVA 10,5% €','Total €','JA %','Jandro %','Jorge %','Volta'],...vendas.map(v=>{const imp=calc(Number(v.quilos||0),Number(v.prezo||0));return[v.data,v.batea,v.tipo,v.esBaracada?null:Number(v.cantidade||0),Number(v.quilos||0),Number(v.prezo||0),imp.bruto,imp.coop,imp.base,imp.iva,imp.total,Number(v.porcentaxeJA||0),Number(v.porcentaxeJandro||0),Number(v.porcentaxeJorge||0),v.volta||''];})];
-  const wsV=XLSX.utils.aoa_to_sheet(vData);setFmt(wsV,[5,6,7,8,9,10],FMT_EUR);setFmt(wsV,[11,12,13],FMT_PCT);XLSX.utils.book_append_sheet(wb,wsV,'Vendas');
-  const gData=[['Data','Hermano','Importe €','Concepto'],...gastos.map(g=>[g.data,nom(g.hermano),Number(g.importe||0),g.concepto||''])];
-  const wsG=XLSX.utils.aoa_to_sheet(gData);setFmt(wsG,[2],FMT_EUR);XLSX.utils.book_append_sheet(wb,wsG,'Gastos');
-  const iData=[['Data','Hermano','Importe €','Concepto'],...ingresosExtra.map(i=>[i.data,nom(i.hermano),Number(i.importe||0),i.concepto||''])];
-  const wsI=XLSX.utils.aoa_to_sheet(iData);setFmt(wsI,[2],FMT_EUR);XLSX.utils.book_append_sheet(wb,wsI,'Ingresos Extra');
-  const ini=anoActivo+'-01-01', fin=anoActivo+'-12-31';
-  const vv=vendas.filter(v=>v.data>=ini&&v.data<=fin),gg=gastos.filter(g=>g.data>=ini&&g.data<=fin),ii=ingresosExtra.filter(i=>i.data>=ini&&i.data<=fin);
-  let gJA=0,gJandro=0,gJorge=0;vv.forEach(v=>{const t=calc(Number(v.quilos||0),Number(v.prezo||0)).total;gJA+=t*(Number(v.porcentaxeJA||0)/100);gJandro+=t*(Number(v.porcentaxeJandro||0)/100);gJorge+=t*(Number(v.porcentaxeJorge||0)/100);});
-  let iJA=0,iJandro=0,iJorge=0;ii.forEach(i=>{if(i.hermano==='JA')iJA+=Number(i.importe||0);if(i.hermano==='Jandro')iJandro+=Number(i.importe||0);if(i.hermano==='Jorge')iJorge+=Number(i.importe||0);});
-  let gasJA=0,gasJandro=0,gasJorge=0;gg.forEach(g=>{if(g.hermano==='JA')gasJA+=Number(g.importe||0);if(g.hermano==='Jandro')gasJandro+=Number(g.importe||0);if(g.hermano==='Jorge')gasJorge+=Number(g.importe||0);});
-  const rData=[['Hermano','Ganancias €','Ingresos Extra €','Gastos €','Neto €'],['Juan Antonio',gJA,iJA,gasJA,gJA+iJA-gasJA],['Jandro',gJandro,iJandro,gasJandro,gJandro+iJandro-gasJandro],['Jorge',gJorge,iJorge,gasJorge,gJorge+iJorge-gasJorge],[],['TOTAL',gJA+gJandro+gJorge,iJA+iJandro+iJorge,gasJA+gasJandro+gasJorge,(gJA+gJandro+gJorge)+(iJA+iJandro+iJorge)-(gasJA+gasJandro+gasJorge)]];
-  const wsR=XLSX.utils.aoa_to_sheet(rData);setFmt(wsR,[1,2,3,4],FMT_EUR);XLSX.utils.book_append_sheet(wb,wsR,'Resumo');
-  // ====== HOJA POR QUINCENAS ======
+function gardarEdicion() {
+  const id      = parseInt(document.getElementById('editId').value, 10);
+  const idx     = vendas.findIndex(x => x.id === id);
+  if (idx === -1) return;
+
+  const data       = document.getElementById('editData').value;
+  const batea      = document.getElementById('editBatea').value;
+  const tipo       = document.getElementById('editTipo').value;
+  const cantidade  = parseFloat(document.getElementById('editCantidade').value);
+  const prezoMan   = parseFloat(document.getElementById('editPrezo').value);
+  const retPct     = parseFloat(document.getElementById('editRetencionPct').value)||0;
+  const volta      = document.getElementById('editVolta').value;
+  const pJA        = parseFloat(document.getElementById('editPorcentaxeJA').value)||0;
+  const pJandro    = parseFloat(document.getElementById('editPorcentaxeJandro').value)||0;
+  const pJorge     = parseFloat(document.getElementById('editPorcentaxeJorge').value)||0;
+
+  if (Math.abs(pJA+pJandro+pJorge - 100) > 0.01) {
+    const a = document.getElementById('alertEditar');
+    a.textContent = 'Os porcentaxes deben sumar exactamente 100%';
+    a.style.display = 'block'; return;
+  }
+
+  const esBaracada = tipo === 'BARCADA';
+  const quilos     = esBaracada ? cantidade : cantidade * 10;
+  let prezo;
+  if (esBaracada) {
+    if (isNaN(prezoMan)) { const a = document.getElementById('alertEditar'); a.textContent = 'En BARCADA tes que poñer o prezo €/kg manualmente'; a.style.display = 'block'; return; }
+    prezo = prezoMan;
+  } else {
+    prezo = isNaN(prezoMan) ? (precos[tipo]||0) : prezoMan;
+  }
+
+  const imp        = calcularImportesVenda(quilos, prezo);
+  const retImporte = imp.bruto * (retPct/100);
+  const v          = vendas[idx];
+
+  Object.assign(v, {
+    data, batea, tipo, volta, esBaracada,
+    cantidade: esBaracada ? 0 : cantidade,
+    cantidadeBarcada: esBaracada ? cantidade : null,
+    quilos, prezo,
+    bruto: imp.bruto, coop: imp.coop, base: imp.base, iva: imp.iva, ganancia: imp.total,
+    retencionPct: retPct, retencionImporte: retImporte,
+    porcentaxeJA: pJA, porcentaxeJandro: pJandro, porcentaxeJorge: pJorge,
+    calcVersion: CALC_VERSION
+  });
+
+  gardarDatos(); pecharModalEditar(); actualizarFormulario(); mostrarAlerta('✅ Venda actualizada correctamente!');
+}
+
+document.getElementById('modalEditar').addEventListener('click', e => { if (e.target.id === 'modalEditar') pecharModalEditar(); });
+
+// =============================================
+//  MODAIS EDITAR GASTO
+// =============================================
+function abrirEditarGasto(id) {
+  const g = gastos.find(x => x.id === id); if (!g) return;
+  document.getElementById('editGastoId').value      = g.id;
+  document.getElementById('editGastoData').value    = g.data;
+  document.getElementById('editGastoHermano').value = g.hermano;
+  document.getElementById('editGastoImporte').value = g.importe;
+  document.getElementById('editGastoConcepto').value= g.concepto||'';
+  document.getElementById('alertEditarGasto').style.display = 'none';
+  document.getElementById('modalEditarGasto').style.display = 'flex';
+}
+function pecharModalEditarGasto() { document.getElementById('modalEditarGasto').style.display = 'none'; }
+
+function gardarEdicionGasto() {
+  const id      = parseInt(document.getElementById('editGastoId').value, 10);
+  const idx     = gastos.findIndex(x => x.id === id); if (idx === -1) return;
+  const data    = document.getElementById('editGastoData').value;
+  const hermano = document.getElementById('editGastoHermano').value;
+  const importe = parseFloat(document.getElementById('editGastoImporte').value);
+  const concepto= document.getElementById('editGastoConcepto').value||'';
+  if (!data || !hermano || isNaN(importe) || importe <= 0) {
+    const a = document.getElementById('alertEditarGasto'); a.textContent='Introduce unha data e un importe válido (> 0).'; a.style.display='block'; return;
+  }
+  Object.assign(gastos[idx], { data, hermano, importe, concepto });
+  gardarDatos(); pecharModalEditarGasto(); actualizarFormulario(); mostrarAlertaGastos('✅ Gasto actualizado!');
+}
+document.getElementById('modalEditarGasto').addEventListener('click', e => { if (e.target.id === 'modalEditarGasto') pecharModalEditarGasto(); });
+
+// =============================================
+//  MODAIS EDITAR INGRESO
+// =============================================
+function abrirEditarIngreso(id) {
+  const i = ingresosExtra.find(x => x.id === id); if (!i) return;
+  document.getElementById('editIngresoId').value       = i.id;
+  document.getElementById('editIngresoData').value     = i.data;
+  document.getElementById('editIngresoHermano').value  = i.hermano;
+  document.getElementById('editIngresoImporte').value  = i.importe;
+  document.getElementById('editIngresoConcepto').value = i.concepto||'';
+  document.getElementById('alertEditarIngreso').style.display = 'none';
+  document.getElementById('modalEditarIngreso').style.display = 'flex';
+}
+function pecharModalEditarIngreso() { document.getElementById('modalEditarIngreso').style.display = 'none'; }
+
+function gardarEdicionIngreso() {
+  const id      = parseInt(document.getElementById('editIngresoId').value, 10);
+  const idx     = ingresosExtra.findIndex(x => x.id === id); if (idx === -1) return;
+  const data    = document.getElementById('editIngresoData').value;
+  const hermano = document.getElementById('editIngresoHermano').value;
+  const importe = parseFloat(document.getElementById('editIngresoImporte').value);
+  const concepto= document.getElementById('editIngresoConcepto').value||'';
+  if (!data || !hermano || isNaN(importe) || importe <= 0) {
+    const a = document.getElementById('alertEditarIngreso'); a.textContent='Introduce unha data e un importe válido (> 0).'; a.style.display='block'; return;
+  }
+  Object.assign(ingresosExtra[idx], { data, hermano, importe, concepto });
+  gardarDatos(); pecharModalEditarIngreso(); actualizarFormulario(); mostrarAlertaIngresos('✅ Ingreso extra actualizado!');
+}
+document.getElementById('modalEditarIngreso').addEventListener('click', e => { if (e.target.id === 'modalEditarIngreso') pecharModalEditarIngreso(); });
+
+// =============================================
+//  EXPORT EXCEL COMPLETO
+// =============================================
+function setColFmt(ws, colIdx, fmt) {
+  if (!ws['!ref']) return;
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let r = range.s.r + 1; r <= range.e.r; r++) {
+    const addr = XLSX.utils.encode_cell({ r, c: colIdx });
+    const cell = ws[addr];
+    if (cell && cell.t === 'n') cell.z = fmt;
+  }
+}
+
+function exportarExcel() {
+  if (!vendas.length && !gastos.length && !ingresosExtra.length) { mostrarAlerta('Non hai datos para exportar', 'error'); return; }
+  const wb   = XLSX.utils.book_new();
+  const EUR  = '#,##0.00"€"';
+  const PCT  = '0"%"';
+  const nom  = h => h === 'JA' ? 'Juan Antonio' : h;
+  const ini  = '2026-01-01';
+
+  // Vendas
+  const vendasData = [['Data','Batea','Tipo','Sacos/kg','Quilos','Prezo €/kg','Bruto €','Coop 6,5% €','Base €','IVA 10,5% €','Total €','Retención %','Retención €','JA %','Jandro %','Jorge %','Volta']];
+  vendas.forEach(v => {
+    const imp = calcularImportesVenda(Number(v.quilos||0), Number(v.prezo||0));
+    const rPct = Number(v.retencionPct !== undefined ? v.retencionPct : 2);
+    const rImp = imp.bruto * (rPct/100);
+    vendasData.push([
+      v.data, v.batea, v.tipo,
+      v.esBaracada ? (v.cantidadeBarcada||0) : (v.cantidade||0),
+      Number(v.quilos||0), Number(v.prezo||0),
+      imp.bruto, imp.coop, imp.base, imp.iva, imp.total,
+      rPct, rImp,
+      Number(v.porcentaxeJA||0), Number(v.porcentaxeJandro||0), Number(v.porcentaxeJorge||0),
+      v.volta||''
+    ]);
+  });
+  const wsV = XLSX.utils.aoa_to_sheet(vendasData);
+  wsV['!cols'] = [{wch:11},{wch:12},{wch:12},{wch:9},{wch:8},{wch:10},{wch:11},{wch:13},{wch:11},{wch:12},{wch:11},{wch:11},{wch:11},{wch:7},{wch:9},{wch:8},{wch:10}];
+  [5,6,7,8,9,10,12].forEach(c => setColFmt(wsV,c,EUR));
+  [13,14,15].forEach(c => setColFmt(wsV,c,PCT));
+  XLSX.utils.book_append_sheet(wb, wsV, 'Vendas');
+
+  // Gastos
+  const gastosData = [['Data','Hermano','Importe €','Concepto']];
+  gastos.forEach(g => gastosData.push([g.data, nom(g.hermano), Number(g.importe||0), g.concepto||'']));
+  const wsG = XLSX.utils.aoa_to_sheet(gastosData);
+  wsG['!cols'] = [{wch:11},{wch:14},{wch:12},{wch:30}];
+  setColFmt(wsG, 2, EUR);
+  XLSX.utils.book_append_sheet(wb, wsG, 'Gastos');
+
+  // Ingresos Extra
+  const ingData = [['Data','Hermano','Importe €','Concepto']];
+  ingresosExtra.forEach(i => ingData.push([i.data, nom(i.hermano), Number(i.importe||0), i.concepto||'']));
+  const wsI = XLSX.utils.aoa_to_sheet(ingData);
+  wsI['!cols'] = [{wch:11},{wch:14},{wch:12},{wch:30}];
+  setColFmt(wsI, 2, EUR);
+  XLSX.utils.book_append_sheet(wb, wsI, 'Ingresos Extra');
+
+  // Resumo anual
+  const vv = vendas.filter(v => v.data >= ini);
+  const gg = gastos.filter(g => g.data >= ini);
+  const ii = ingresosExtra.filter(i => i.data >= ini);
+  let gJA=0,gJn=0,gJr=0;
+  vv.forEach(v => { const t=Number(v.ganancia||0); gJA+=t*(Number(v.porcentaxeJA||0)/100); gJn+=t*(Number(v.porcentaxeJandro||0)/100); gJr+=t*(Number(v.porcentaxeJorge||0)/100); });
+  let iJA=0,iJn=0,iJr=0;
+  ii.forEach(i => { if(i.hermano==='JA') iJA+=Number(i.importe||0); if(i.hermano==='Jandro') iJn+=Number(i.importe||0); if(i.hermano==='Jorge') iJr+=Number(i.importe||0); });
+  let eJA=0,eJn=0,eJr=0;
+  gg.forEach(g => { if(g.hermano==='JA') eJA+=Number(g.importe||0); if(g.hermano==='Jandro') eJn+=Number(g.importe||0); if(g.hermano==='Jorge') eJr+=Number(g.importe||0); });
+  const resData = [
+    ['Hermano','Ganancias €','Ingresos Extra €','Gastos €','Neto €'],
+    ['Juan Antonio',gJA,iJA,eJA,gJA+iJA-eJA],
+    ['Jandro',gJn,iJn,eJn,gJn+iJn-eJn],
+    ['Jorge',gJr,iJr,eJr,gJr+iJr-eJr],
+    [],
+    ['TOTAL',gJA+gJn+gJr,iJA+iJn+iJr,eJA+eJn+eJr,(gJA+gJn+gJr)+(iJA+iJn+iJr)-(eJA+eJn+eJr)]
+  ];
+  const wsR = XLSX.utils.aoa_to_sheet(resData);
+  wsR['!cols'] = [{wch:14},{wch:14},{wch:18},{wch:14},{wch:14}];
+  [1,2,3,4].forEach(c => setColFmt(wsR,c,EUR));
+  XLSX.utils.book_append_sheet(wb, wsR, 'Resumo');
+
+  // Por Quincenas
   const quincenas = {};
   vv.forEach(v => {
     const [ano, mes, dia] = v.data.split('-').map(Number);
-    const esQ1 = dia <= 15;
-    const key = `${ano}-${String(mes).padStart(2,'0')}-${esQ1?'Q1':'Q2'}`;
-    if (!quincenas[key]) quincenas[key] = { JA:0, Jandro:0, Jorge:0, label:'', cobro:'' };
-    const label = esQ1 ? `${String(mes).padStart(2,'0')}/${ano} (1-15)` : `${String(mes).padStart(2,'0')}/${ano} (16-fin)`;
-    quincenas[key].label = label;
-
-    // Fecha de cobro = +90 dias desde el ultimo dia de la quincena
-    const ultimoDia = esQ1 ? new Date(ano, mes-1, 15) : new Date(ano, mes, 0);
-    const fechaCobro = new Date(ultimoDia.getTime() + 90*24*60*60*1000);
-    quincenas[key].cobro = `${String(fechaCobro.getDate()).padStart(2,'0')}/${String(fechaCobro.getMonth()+1).padStart(2,'0')}/${fechaCobro.getFullYear()}`;
-
-    const total = calc(Number(v.quilos||0), Number(v.prezo||0)).total;
-    quincenas[key].JA     += total * (Number(v.porcentaxeJA||0)     / 100);
-    quincenas[key].Jandro += total * (Number(v.porcentaxeJandro||0) / 100);
-    quincenas[key].Jorge  += total * (Number(v.porcentaxeJorge||0)  / 100);
+    const q = dia <= 15 ? `${ano}-${String(mes).padStart(2,'0')}-Q1` : `${ano}-${String(mes).padStart(2,'0')}-Q2`;
+    if (!quincenas[q]) quincenas[q] = { JA:0, Jandro:0, Jorge:0 };
+    const t = Number(v.ganancia||0);
+    quincenas[q].JA     += t * (Number(v.porcentaxeJA||0)/100);
+    quincenas[q].Jandro += t * (Number(v.porcentaxeJandro||0)/100);
+    quincenas[q].Jorge  += t * (Number(v.porcentaxeJorge||0)/100);
   });
-
-  const qKeys = Object.keys(quincenas).sort();
-  let acumJA=0, acumJandro=0, acumJorge=0;
-  const qData = [['Periodo','Juan Antonio €','Jandro €','Jorge €','Total €','Data de Cobro (90 días)']];
-  qKeys.forEach(k => {
-    const d = quincenas[k];
-    acumJA     += d.JA;
-    acumJandro += d.Jandro;
-    acumJorge  += d.Jorge;
-    const total = d.JA + d.Jandro + d.Jorge;
-    qData.push([d.label, d.JA, d.Jandro, d.Jorge, total, d.cobro]);
+  const qData = [['Periodo','Juan Antonio €','Jandro €','Jorge €']];
+  let acJA=0, acJn=0, acJr=0;
+  Object.keys(quincenas).sort().forEach(q => {
+    const d = quincenas[q];
+    acJA+=d.JA; acJn+=d.Jandro; acJr+=d.Jorge;
+    const [ano,mes,quinc] = q.split('-');
+    const lbl = quinc==='Q1' ? `${mes}/${ano} (1-15)` : `${mes}/${ano} (16-fin)`;
+    qData.push([lbl, d.JA, d.Jandro, d.Jorge]);
   });
-  qData.push([]);
-  qData.push(['ACUMULADO TOTAL', acumJA, acumJandro, acumJorge, acumJA+acumJandro+acumJorge, '']);
-
+  qData.push([]); qData.push(['ACUMULADO TOTAL', acJA, acJn, acJr]);
   const wsQ = XLSX.utils.aoa_to_sheet(qData);
-  wsQ['!freeze'] = {xSplit:0, ySplit:1};
-  wsQ['!cols'] = [{wch:20},{wch:16},{wch:16},{wch:16},{wch:14},{wch:22}];
-  setFmt(wsQ, [1,2,3,4], FMT_EUR);
-
-  // Negrita en cabecera y fila de totales
-  const qRange = XLSX.utils.decode_range(wsQ['!ref']);
-  [0, qData.length-1].forEach(r => {
-    for (let c = qRange.s.c; c <= qRange.e.c; c++) {
-      const addr = XLSX.utils.encode_cell({r, c});
-      if (!wsQ[addr]) wsQ[addr] = {t:'s', v:''};
-      if (!wsQ[addr].s) wsQ[addr].s = {};
-      wsQ[addr].s.font = {bold: true};
-    }
-  });
-
+  wsQ['!cols'] = [{wch:18},{wch:16},{wch:16},{wch:16}];
+  [1,2,3].forEach(c => setColFmt(wsQ,c,EUR));
   XLSX.utils.book_append_sheet(wb, wsQ, 'Por Quincenas');
 
-  XLSX.writeFile(wb,`amegrove-${hoxe()}.xlsx`);
+  XLSX.writeFile(wb, `amegrove-${new Date().toISOString().split('T')[0]}.xlsx`);
 }
-window.exportarExcel=exportarExcel;
 
 // =============================================
-// INICIO
+//  EXPORT EXCEL HACIENDA (MODELO 131)
 // =============================================
-window.addEventListener('load', () => {
-  document.getElementById('data').value=hoxe();
-  document.getElementById('gastoData').value=hoxe();
-  document.getElementById('ingresoData').value=hoxe();
-  document.getElementById('filtroData').value=hoxe();
-  document.getElementById('filtroDataGastos').value=hoxe();
-  document.getElementById('filtroDataIngresos').value=hoxe();
-  document.getElementById('filtroData').addEventListener('change',e=>{filtroData=e.target.value;verTodasAsVendas=false;actualizarListado();actualizarReparticion();});
-  document.getElementById('filtroDataGastos').addEventListener('change',e=>{filtroDataGastos=e.target.value;verTodosOsGastos=false;actualizarListadoGastos();});
-  document.getElementById('filtroDataIngresos').addEventListener('change',e=>{filtroDataIngresos=e.target.value;verTodosOsIngresos=false;actualizarListadoIngresos();});
+function exportarExcelHacienda() {
+  const EUR = '#,##0.00"€"';
+  const PCT = '0.00"%"';
+  const ano = String(anoActivo);
+  const ini = ano + '-01-01';
+  const vv  = vendas.filter(v => v.data >= ini && v.data < (anoActivo+1) + '-01-01');
 
-  // Verificar se Firebase está configurado
-  if (firebaseConfig.apiKey === 'TU_API_KEY') {
-    document.getElementById('configFirebase').style.display='block';
-    document.getElementById('loadingOverlay').style.display='none';
-    setSync('error','Firebase non configurado');
-    return;
+  const wb = XLSX.utils.book_new();
+
+  function getTrimestre(fecha) {
+    const m = parseInt(fecha.split('-')[1], 10);
+    if (m <= 3) return 'T1'; if (m <= 6) return 'T2';
+    if (m <= 9) return 'T3'; return 'T4';
+  }
+  function labelTrimestre(t) {
+    const noms = { T1:'1er Trimestre (Ene-Mar)', T2:'2º Trimestre (Abr-Jun)',
+                   T3:'3er Trimestre (Jul-Sep)', T4:'4º Trimestre (Oct-Dic)' };
+    return `${ano} - ${noms[t]}`;
+  }
+  function setColFmtH(ws, col, fmt) {
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    for (let r = range.s.r; r <= range.e.r; r++) {
+      const addr = XLSX.utils.encode_cell({r, c: col});
+      if (ws[addr] && typeof ws[addr].v === 'number') {
+        if (!ws[addr].s) ws[addr].s = {};
+        ws[addr].z = fmt;
+      }
+    }
   }
 
-  try {
-    const app = initializeApp(firebaseConfig);
-    db = getDatabase(app);
-    activarListenerTiempoReal();
-  } catch(e) {
-    setSync('error','Erro Firebase: '+e.message);
-    document.getElementById('loadingOverlay').style.display='none';
-  }
-});
+  // ── Hermanos a procesar ────────────────────────────────────────────────
+  const hermanos = [
+    { key: 'JA',     nombre: 'Juan Antonio', hoja: 'JA - Juan Antonio' },
+    { key: 'Jandro', nombre: 'Jandro',        hoja: 'Jandro'            },
+    { key: 'Jorge',  nombre: 'Jorge',          hoja: 'Jorge'             }
+  ];
+
+  hermanos.forEach(h => {
+    // ── Ingresos de ventas proporcionales a este hermano ──────────────
+    const trimestres = {};
+    const allKeys = [ano+'-T1', ano+'-T2', ano+'-T3', ano+'-T4'];
+    allKeys.forEach(k => trimestres[k] = { bruto: 0, retencion: 0 });
+
+    vv.forEach(v => {
+      const pct = Number(v['porcentaxe' + h.key] || v['porcentaxe' + (h.key==='JA'?'JA':h.key)] || 0) / 100;
+      if (pct === 0) return;
+      const brutoBruto = Number(v.quilos||0) * Number(v.prezo||0); // bruto total venda
+      const brutoHerm  = brutoBruto * pct;                          // parte de este hermano
+      const rPct = Number(v.retencionPct !== undefined ? v.retencionPct : 2);
+      const rImp = brutoHerm * (rPct / 100);
+      const key  = ano + '-' + getTrimestre(v.data);
+      trimestres[key].bruto     += brutoHerm;
+      trimestres[key].retencion += rImp;
+    });
+
+    // ── Ingresos extraordinarios de este hermano ──────────────────────
+    const ingExtra = {};
+    allKeys.forEach(k => ingExtra[k] = 0);
+    ingresosExtra.filter(i => i.data >= ini && i.hermano === h.key).forEach(i => {
+      const key = ano + '-' + getTrimestre(i.data);
+      if (ingExtra[key] !== undefined) ingExtra[key] += Number(i.importe||0);
+    });
+
+    // ── Gastos de este hermano ────────────────────────────────────────
+    const gastosTrim = {};
+    allKeys.forEach(k => gastosTrim[k] = 0);
+    gastos.filter(g => g.data >= ini && g.hermano === h.key).forEach(g => {
+      const key = ano + '-' + getTrimestre(g.data);
+      if (gastosTrim[key] !== undefined) gastosTrim[key] += Number(g.importe||0);
+    });
+
+    // ── Construir datos de la hoja ────────────────────────────────────
+    const resData = [[
+      'Trimestre',
+      'Ingresos Ventas €',
+      'Ingresos Extras €',
+      'Total Ingresos Íntegros €',
+      'Pago Fraccionado 2% €',
+      'Retenciones Soportadas €',
+      'RESULTADO NETO Modelo 131 €',
+      'Gastos (informativo) €',
+      'Observacións'
+    ]];
+
+    let totBruto=0, totExtra=0, totRet=0, totGastos=0;
+
+    allKeys.forEach(key => {
+      const t      = key.split('-')[1];
+      const d      = trimestres[key];
+      const extra  = ingExtra[key];
+      const gasto  = gastosTrim[key];
+      const total  = d.bruto + extra;
+      const pagFrac = total * 0.02;
+      const neto   = Math.max(0, pagFrac - d.retencion);
+      totBruto  += d.bruto;
+      totExtra  += extra;
+      totRet    += d.retencion;
+      totGastos += gasto;
+      resData.push([
+        labelTrimestre(t),
+        d.bruto, extra, total,
+        pagFrac, d.retencion,
+        neto,
+        gasto,
+        neto === 0 ? 'Retenciones cubren el pago' : ''
+      ]);
+    });
+
+    // Fila total
+    const totTotal   = totBruto + totExtra;
+    const totPag     = totTotal * 0.02;
+    const totNeto    = Math.max(0, totPag - totRet);
+    resData.push([]);
+    resData.push([
+      'TOTAL ' + ano,
+      totBruto, totExtra, totTotal,
+      totPag, totRet, totNeto, totGastos, ''
+    ]);
+
+    // Notas
+    resData.push([]);
+    resData.push(['--- DATOS PARA LA GESTORÍA ---','','','','','','','','']);
+    resData.push(['Hermano:', h.nombre,'','','','','','','']);
+    resData.push(['Actividad:', 'Mejillón en batea - Módulos Anexo I (equiparada agrícola desde 2025)','','','','','','','']);
+    resData.push(['Base cálculo:', 'Art. 110.3 RIRPF - Ingresos íntegros × 2% = Pago fraccionado','','','','','','','']);
+    resData.push(['Retenciones:', '2% retenido por el comprador en factura (descontar del pago fraccionado)','','','','','','','']);
+    resData.push(['Generado:', new Date().toLocaleDateString('gl-ES'),'','','','','','','']);
+
+    const ws = XLSX.utils.aoa_to_sheet(resData);
+    ws['!cols'] = [{wch:34},{wch:18},{wch:16},{wch:24},{wch:22},{wch:24},{wch:28},{wch:20},{wch:45}];
+    [1,2,3,4,5,6,7].forEach(c => setColFmtH(ws, c, EUR));
+    XLSX.utils.book_append_sheet(wb, ws, h.hoja);
+  });
+
+  XLSX.writeFile(wb, `hacienda-131-${ano}-${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+// =============================================
+//  BACKUP JSON
+// =============================================
+function exportarCopiaJSON() {
+  const backup = {
+    schema: 1, createdAt: new Date().toISOString(), origin: location.origin,
+    vendas: vendas, gastos: gastos, ingresosExtra: ingresosExtra,
+    precos: precos, precos_version: PREZOS_VERSION
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `amegrove-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function abrirImportJSON() {
+  const input = document.getElementById('importJsonFile');
+  if (!input) return;
+  input.value = ''; input.click();
+}
+
+(function activarImportJSON() {
+  const input = document.getElementById('importJsonFile');
+  if (!input) return;
+  input.addEventListener('change', e => {
+    const file = e.target.files && e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(String(reader.result||''));
+        if (!data || typeof data !== 'object') throw new Error('JSON inválido');
+        const nv = Array.isArray(data.vendas) ? data.vendas : [];
+        const ng = Array.isArray(data.gastos) ? data.gastos : [];
+        const ni = Array.isArray(data.ingresosExtra) ? data.ingresosExtra : [];
+        const np = (data.precos && typeof data.precos === 'object') ? data.precos : null;
+        const reemplazar = confirm('¿Importar copia?\n\nAceptar = REEMPLAZAR todos os datos actuais\nCancelar = MESTURAR (manter e engadir o que falte)');
+        if (reemplazar) {
+          vendas = nv; gastos = ng; ingresosExtra = ni;
+          if (np) precos = np;
+        } else {
+          const idsV = new Set(vendas.map(v => v&&v.id).filter(Boolean));
+          nv.forEach(v => { if (!v||!v.id) v.id=Date.now()+Math.floor(Math.random()*100000); if (!idsV.has(v.id)) { vendas.push(v); idsV.add(v.id); } });
+          const idsG = new Set(gastos.map(g => g&&g.id).filter(Boolean));
+          ng.forEach(g => { if (!g||!g.id) g.id=Date.now()+Math.floor(Math.random()*100000); if (!idsG.has(g.id)) { gastos.push(g); idsG.add(g.id); } });
+          const idsI = new Set(ingresosExtra.map(i => i&&i.id).filter(Boolean));
+          ni.forEach(i => { if (!i||!i.id) i.id=Date.now()+Math.floor(Math.random()*100000); if (!idsI.has(i.id)) { ingresosExtra.push(i); idsI.add(i.id); } });
+          if (np) precos = np;
+        }
+        gardarDatos(); migrarVendasSeFaiFalta(); actualizarFormulario(); actualizarFormPrecos();
+        alert('✅ Importación completada');
+      } catch(err) { alert('❌ Non se puido importar o JSON. Asegúrate de que é unha copia exportada dende esta app.'); }
+    };
+    reader.readAsText(file);
+  });
+})();
+
+function diagnosticoURL() {
+  const keys = Object.keys(localStorage);
+  alert(`standalone=${window.navigator.standalone}\nhref=${location.href}\norigin=${location.origin}\nlocalStorage keys: ${keys.join(', ')||'(ningunha)'}`);
+}
+
+// =============================================
+//  INICIO
+// =============================================
+window.addEventListener('load', cargarDatos);
 </script>
 </body>
 </html>
